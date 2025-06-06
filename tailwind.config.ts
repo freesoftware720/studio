@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        body: ['Poppins', 'sans-serif'],
+        headline: ['Poppins', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -65,11 +65,12 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        hotpink: 'hsl(330, 100%, 71%)', // #FF69B4
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        lg: 'var(--radius)', // 1.5rem (24px)
+        md: 'calc(var(--radius) - 0.5rem)', // 1rem (16px)
+        sm: 'calc(var(--radius) - 1rem)', // 0.5rem (8px)
       },
       keyframes: {
         'accordion-down': {
@@ -93,6 +94,9 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      boxShadow: {
+        'glass': '0 4px 30px rgba(0, 0, 0, 0.8)',
+      }
     },
   },
   plugins: [require('tailwindcss-animate')],
