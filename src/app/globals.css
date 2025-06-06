@@ -76,8 +76,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(hsla(0,0%,100%,0.015) 0.5px, transparent 0.5px); /* Subtle dot pattern */
-    background-size: 6px 6px; /* Density of the dot pattern */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cpath d='M0 20 Q 20 0 40 20 T 80 20' fill='none' stroke='hsla(0,0%25,100%25,0.015)' stroke-width='1'/%3E%3C/svg%3E"); /* Subtle wave pattern */
+    background-size: 80px 40px; /* Density of the wave pattern */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
