@@ -12,7 +12,7 @@ export function AppShell({ children }: AppShellProps) {
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {children}
       </main>
-      <footer className="py-6 text-center text-sm text-muted-foreground">
+      <footer className="py-6 text-center text-sm text-muted-foreground font-headline">
         © {new Date().getFullYear()} SmartChef. All rights reserved.
       </footer>
     </div>
