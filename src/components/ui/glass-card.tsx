@@ -7,16 +7,14 @@ const GlassCard: React.FC<GlassCardProps> = ({ className, children, ...props }) 
   return (
     <div
       className={cn(
-        "bg-white/5 backdrop-blur-10", // backdrop-blur-10 is custom in globals.css for 10px
-        "shadow-glass", // Using custom shadow from tailwind.config.ts
-        "rounded-lg", // Uses --radius from globals.css (1.5rem / 24px)
-        "border border-white/10", // Subtle border
-        "p-6", // Default padding
-        className
+        "hover-animated-rgb-border-effect rounded-lg", // Applies effect, outer rounding, and shadow
+        className // User's custom classes are preserved
       )}
-      {...props}
+      {...props} // Spread props to the outer div
     >
-      {children}
+      <div className="hover-animated-rgb-border-inner"> {/* Handles solid bg and padding */}
+        {children}
+      </div>
     </div>
   );
 };

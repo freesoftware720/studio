@@ -102,11 +102,11 @@
     inset: 0; /* Cover the entire area of the parent */
     border-radius: inherit; /* Inherit from parent (.hover-animated-rgb-border-effect) */
     padding: 2px; /* This creates the border thickness */
-    background: conic-gradient(
+    background: conic-gradient( /* Pink, Red, Orange, looping to Pink */
+      hsl(330, 100%, 71%), /* Hot Pink */
       hsl(var(--destructive)), /* Red */
-      hsl(330, 100%, 71%), /* hotpink - Pink */
       orange, /* Orange */
-      hsl(var(--destructive)) /* Loop back to Red */
+      hsl(330, 100%, 71%) /* Loop back to Hot Pink */
     );
     -webkit-mask: /* Mask to show only the border part of the gradient */
       linear-gradient(#fff 0 0) content-box, /* The inner "transparent" area */
