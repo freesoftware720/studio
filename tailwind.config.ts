@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Poppins', 'sans-serif'],
-        headline: ['Poppins', 'sans-serif'],
+        body: ['Jameel Noori Nastaleeq', 'Poppins', 'sans-serif'],
+        headline: ['Poppins', 'sans-serif'], // Headline can remain Poppins or also include Jameel if desired
         code: ['monospace'],
       },
       colors: {
