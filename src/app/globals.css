@@ -123,9 +123,6 @@
     pointer-events: none; /* Make sure it doesn't interfere with interactions */
     z-index: -1; /* Place it behind the .hover-animated-rgb-border-inner content */
   }
-  .hover-animated-rgb-border-effect:hover::before {
-    opacity: 1; /* Show on hover */
-  }
 
   .hover-animated-rgb-border-inner {
     background: hsl(var(--card)); /* Solid card background from theme */
@@ -181,5 +178,21 @@
     25% { color: hsl(var(--accent)); }    /* Orange */
     50% { color: hsl(var(--destructive)); } /* Red */
     75% { color: hsl(330, 100%, 71%); } /* Hot Pink */
+  }
+
+  @keyframes chefhat-fill {
+    0%, 100% {
+      color: hsla(var(--primary), 0.3);
+    }
+    50% {
+      color: hsla(var(--primary), 1);
+    }
+  }
+
+  @keyframes bobble {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-6px) rotate(-5deg); }
+    50% { transform: translateY(0px) rotate(0deg); }
+    75% { transform: translateY(-6px) rotate(5deg); }
   }
 }

@@ -105,6 +105,10 @@ export default {
           '50%': { color: 'hsl(var(--destructive))' },
           '75%': { color: 'hsl(330, 100%, 71%)' },
         },
+        'chefhat-fill': {
+          '0%, 100%': { color: 'hsla(var(--primary), 0.3)' },
+          '50%': { color: 'hsla(var(--primary), 1)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -112,6 +116,7 @@ export default {
         'rgb-border-spin': 'rgb-border-spin 4s linear infinite',
         'bobble': 'bobble 2.5s ease-in-out infinite',
         'rgb-icon': 'rgb-icon-animation 3s linear infinite',
+        'chefhat-fill': 'chefhat-fill 1.5s ease-in-out infinite',
       },
       boxShadow: {
         'glass': '0 4px 30px rgba(0, 0, 0, 0.8)',
