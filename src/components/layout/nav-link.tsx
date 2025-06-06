@@ -9,15 +9,17 @@ interface NavLinkProps {
   href: string;
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void; // Added for mobile sheet
 }
 
-export function NavLink({ href, children, className }: NavLinkProps) {
+export function NavLink({ href, children, className, onClick }: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
 
   return (
     <Link
       href={href}
+      onClick={onClick} // Added onClick handler
       className={cn(
         "px-3 py-2 rounded-md text-sm font-medium transition-colors",
         "hover:bg-primary/20 hover:text-primary",
