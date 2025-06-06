@@ -47,7 +47,7 @@ export function Header() {
               <SheetHeader className="mb-6">
                 <SheetTitle>
                   <Link href="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
-                    <ChefHat className="h-7 w-7 text-primary" />
+                    <ChefHat className="h-7 w-7 animate-rgb-icon" />
                     <span className="text-xl font-bold text-primary">SmartChef</span>
                   </Link>
                 </SheetTitle>

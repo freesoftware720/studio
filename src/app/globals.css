@@ -175,4 +175,11 @@
     width: 100%;
     height: 100%;
   }
+
+  @keyframes rgb-icon-animation {
+    0%, 100% { color: hsl(var(--primary)); } /* Pink-Orange */
+    25% { color: hsl(var(--accent)); }    /* Orange */
+    50% { color: hsl(var(--destructive)); } /* Red */
+    75% { color: hsl(330, 100%, 71%); } /* Hot Pink */
+  }
 }
