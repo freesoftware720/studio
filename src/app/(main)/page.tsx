@@ -19,7 +19,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { addRecipeToHistory, updateRecipeImage } = useRecipeStore();
+  const { saveRecipe, updateRecipeImage } = useRecipeStore(); // Changed from addRecipeToHistory
   const { toast } = useToast();
   
   const [chatbotContext, setChatbotContext] = useState<RecipeQuestionContext | null>(null);
@@ -37,8 +37,14 @@ export default function HomePage() {
       // 1. Generate recipe text
       const generatedTextData = await generateRecipe(data);
       
-      // 2. Create initial recipe object and add to history
-      newRecipeBase = addRecipeToHistory(generatedTextData, data); 
+      // 2. Save initial recipe object to DB (which also adds to local state via store)
+      // Pass both core recipe data and original user input
+      newRecipeBase = await saveRecipe(generatedTextData, data); 
+
+      if (!newRecipeBase) {
+        throw new Error("Failed to save the recipe to the database.");
+      }
+
       setCurrentRecipe(newRecipeBase); // Display text part first
       setChatbotContext({
         recipeTitle: newRecipeBase.title,
@@ -52,23 +58,23 @@ export default function HomePage() {
       try {
         const imageData = await generateRecipeImage({ recipeTitle: newRecipeBase.title });
         if (imageData.imageUrl && newRecipeBase) {
-          updateRecipeImage(newRecipeBase.id, imageData.imageUrl);
-          setCurrentRecipe(prev => prev ? { ...prev, imageUrl: imageData.imageUrl } : null);
+          await updateRecipeImage(newRecipeBase.id, imageData.imageUrl); // await this
+          // The store update should trigger a re-render if setCurrentRecipe relies on store's recipe object
+           setCurrentRecipe(prev => prev && prev.id === newRecipeBase!.id ? { ...prev, imageUrl: imageData.imageUrl } : prev);
            toast({ title: "Image Generated!", description: `Image for "${newRecipeBase.title}" is ready.`, variant: "default" });
         }
       } catch (imgErr) {
         console.error("Failed to generate recipe image:", imgErr);
-        // Non-critical error, recipe text is still useful
         toast({ title: "Image Generation Issue", description: `Could not generate image for "${newRecipeBase?.title || 'recipe'}". Displaying placeholder.`, variant: "default" });
       } finally {
         setIsGeneratingImage(false);
       }
 
     } catch (err) {
-      console.error("Failed to generate recipe text:", err);
+      console.error("Failed to generate recipe text or save:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
       setError(`Failed to generate recipe. ${errorMessage}`);
-      toast({ title: "Error Generating Recipe Text", description: errorMessage, variant: "destructive" });
+      toast({ title: "Error Generating Recipe", description: errorMessage, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -92,13 +98,15 @@ export default function HomePage() {
 
 
       {!isLoading && !currentRecipe && !error && (
-         <GlassCard>
-          <div className="text-center py-10 text-muted-foreground">
-            <ChefHat className="mx-auto h-16 w-16 mb-4 text-primary opacity-50 animate-bobble" />
-            <h2 className="text-xl font-semibold mb-2">Welcome to SmartChef!</h2>
-            <p>Enter your ingredients and preferences above, and let our AI whip up a delicious recipe for you.</p>
+         <div className="static-gradient-prompt-wrapper rounded-lg">
+          <div className="static-gradient-prompt-inner">
+            <div className="text-center py-10 text-muted-foreground">
+              <ChefHat className="mx-auto h-16 w-16 mb-4 text-primary opacity-50 animate-bobble" />
+              <h2 className="text-xl font-semibold mb-2">Welcome to SmartChef!</h2>
+              <p>Enter your ingredients and preferences above, and let our AI whip up a delicious recipe for you.</p>
+            </div>
           </div>
-        </GlassCard>
+        </div>
       )}
       
       {currentRecipe && (
