@@ -85,3 +85,55 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+
+@layer utilities {
+  .hover-animated-rgb-border-effect {
+    position: relative; /* Needed for the ::before pseudo-element */
+    /* The shadow is applied here as it's the outermost visible element */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+    /* rounded-lg is applied via className in JSX to this element */
+  }
+  .hover-animated-rgb-border-effect::before {
+    content: '';
+    position: absolute;
+    inset: 0; /* Cover the entire area of the parent */
+    border-radius: inherit; /* Inherit from parent (.hover-animated-rgb-border-effect) */
+    padding: 2px; /* This creates the border thickness */
+    background: conic-gradient(
+      hsl(var(--primary)),
+      hsl(var(--accent)),
+      theme('colors.hotpink'), /* Use hotpink from Tailwind theme */
+      hsl(var(--primary))
+    );
+    -webkit-mask: /* Mask to show only the border part of the gradient */
+      linear-gradient(#fff 0 0) content-box, /* The inner "transparent" area */
+      linear-gradient(#fff 0 0); /* The outer "solid" area */
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; /* Standard for creating a "hole" */
+    mask-composite: exclude; /* Standard property for the same effect */
+    animation: rgb-border-spin 4s linear infinite;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none; /* Make sure it doesn't interfere with interactions */
+    z-index: -1; /* Place it behind the .hover-animated-rgb-border-inner content */
+  }
+  .hover-animated-rgb-border-effect:hover::before {
+    opacity: 1; /* Show on hover */
+  }
+
+  .hover-animated-rgb-border-inner {
+    background: rgba(255, 255, 255, 0.05); /* Original GlassCard bg-white/5 */
+    -webkit-backdrop-filter: blur(10px); /* Original GlassCard backdrop-filter */
+    backdrop-filter: blur(10px);
+    padding: 1.5rem; /* Original GlassCard p-6 equivalent */
+    border-radius: var(--radius); /* Match the parent's rounded-lg. Use var(--radius) as it's globally defined for lg */
+    /* Ensure content is above the ::before pseudo-element of the parent */
+    position: relative; 
+    z-index: 1; 
+    width: 100%;
+    height: 100%;
+    /* The border of the original GlassCard is effectively replaced by the ::before element of the parent */
+  }
+}

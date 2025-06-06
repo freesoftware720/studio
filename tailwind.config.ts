@@ -89,15 +89,22 @@ export default {
             height: '0',
           },
         },
-        'spin-slow': {
+        'rgb-border-spin': {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
+        },
+        'bobble': {
+          '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+          '25%': { transform: 'translateY(-6px) rotate(-5deg)'},
+          '50%': { transform: 'translateY(0px) rotate(0deg)' },
+          '75%': { transform: 'translateY(-6px) rotate(5deg)' },
         },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'spin-slow': 'spin-slow 10s linear infinite',
+        'rgb-border-spin': 'rgb-border-spin 4s linear infinite',
+        'bobble': 'bobble 2.5s ease-in-out infinite',
       },
       boxShadow: {
         'glass': '0 4px 30px rgba(0, 0, 0, 0.8)',
