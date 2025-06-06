@@ -76,7 +76,7 @@ export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
               {...register("ingredients")}
               placeholder="e.g., chicken breast, tomatoes, onion, garlic, olive oil"
               rows={3}
-              className="bg-background/50 border-white/20 focus:border-primary focus:ring-primary"
+              className="bg-background/50 border-white/20 focus:border-primary focus-visible:ring-2 focus-visible:ring-primary"
             />
             {errors.ingredients && <p className="text-sm text-destructive mt-1">{errors.ingredients.message}</p>}
           </div>
