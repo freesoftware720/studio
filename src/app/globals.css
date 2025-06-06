@@ -12,7 +12,7 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 147 45% 49%; /* Emerald Green */
+    --primary: 20 100% 60%; /* Pink-Orange Mixture (Coral/Salmon) */
     --primary-foreground: 0 0% 98%; /* Light text on primary */
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -43,7 +43,7 @@
     --popover: 0 0% 7%; /* Darker popover */
     --popover-foreground: 0 0% 95%;
 
-    --primary: 147 45% 49%; /* #3CB371 Emerald Green */
+    --primary: 20 100% 60%; /* Pink-Orange Mixture (Coral/Salmon) */
     --primary-foreground: 0 0% 98%; /* Light text on primary */
 
     --secondary: 0 0% 12%; /* A slightly lighter gray than background */
@@ -62,7 +62,7 @@
     --input: 0 0% 10%; /* Input bg */
     --ring: 180 100% 50%; /* Electric Blue for rings */
 
-    --chart-1: 147 45% 49%; /* Emerald Green */
+    --chart-1: 20 100% 60%; /* Pink-Orange Mixture (Coral/Salmon) */
     --chart-2: 180 100% 50%; /* Electric Blue */
     --chart-3: 330 100% 71%; /* Hot Pink */
     --chart-4: 43 74% 66%;
@@ -76,6 +76,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(hsla(0,0%,100%,0.015) 0.5px, transparent 0.5px); /* Subtle dot pattern */
+    background-size: 6px 6px; /* Density of the dot pattern */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
