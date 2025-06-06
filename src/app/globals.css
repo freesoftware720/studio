@@ -101,10 +101,10 @@
     border-radius: inherit; /* Inherit from parent (.hover-animated-rgb-border-effect) */
     padding: 2px; /* This creates the border thickness */
     background: conic-gradient(
-      hsl(var(--primary)),
-      hsl(var(--accent)),
-      theme('colors.hotpink'), /* Use hotpink from Tailwind theme */
-      hsl(var(--primary))
+      orange,
+      theme('colors.hotpink'),
+      red,
+      orange /* Loop back to orange */
     );
     -webkit-mask: /* Mask to show only the border part of the gradient */
       linear-gradient(#fff 0 0) content-box, /* The inner "transparent" area */
