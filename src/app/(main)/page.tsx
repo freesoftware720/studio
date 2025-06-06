@@ -30,7 +30,8 @@ export default function HomePage() {
 
     try {
       const generatedData = await generateRecipe(data);
-      const newRecipe = addRecipeToHistory(generatedData, data);
+      // The `data` object now includes the language, cuisine, etc.
+      const newRecipe = addRecipeToHistory(generatedData, data); 
       setCurrentRecipe(newRecipe);
       setChatbotContext({
         recipeTitle: newRecipe.title,
@@ -68,7 +69,7 @@ export default function HomePage() {
           <div className="text-center py-10 text-muted-foreground">
             <ChefHat className="mx-auto h-16 w-16 mb-4 text-primary opacity-50" />
             <h2 className="text-xl font-semibold mb-2">Welcome to SmartChef!</h2>
-            <p>Enter your ingredients above and let our AI whip up a delicious recipe for you.</p>
+            <p>Enter your ingredients and preferences above, and let our AI whip up a delicious recipe for you.</p>
           </div>
         </GlassCard>
       )}

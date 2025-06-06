@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -9,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import GlassCard from "@/components/ui/glass-card";
-import { Sparkles, Utensils } from "lucide-react";
+import { Sparkles, Utensils, Languages } from "lucide-react";
 import type { GenerateRecipeInput } from "@/ai/flows/generate-recipe";
 
 const recipeRequestSchema = z.object({
@@ -17,6 +18,7 @@ const recipeRequestSchema = z.object({
   cuisine: z.string().optional(),
   mealType: z.string().optional(),
   dietaryRestrictions: z.string().optional(),
+  language: z.string().optional(),
 });
 
 type RecipeRequestFormValues = z.infer<typeof recipeRequestSchema>;
@@ -29,11 +31,23 @@ interface IngredientFormProps {
 const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack", "Dessert", "Appetizer", "Side Dish"];
 const commonCuisines = ["Any", "Italian", "Mexican", "Chinese", "Indian", "American", "Japanese", "Thai", "Mediterranean", "French", "Korean"];
 const commonDietaryRestrictions = ["None", "Vegan", "Vegetarian", "Gluten-Free", "Keto", "Paleo", "Dairy-Free", "Nut-Free"];
+const supportedLanguages = [
+  { value: "english", label: "English" },
+  { value: "hindi", label: "Hindi (हिन्दी)" },
+  { value: "urdu", label: "Urdu (اردو)" },
+  { value: "roman urdu", label: "Roman Urdu" },
+  { value: "roman hindi", label: "Roman Hindi" },
+  { value: "spanish", label: "Spanish (Español)" },
+  { value: "french", label: "French (Français)" },
+];
 
 
 export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
   const { register, handleSubmit, control, formState: { errors }, setValue } = useForm<RecipeRequestFormValues>({
     resolver: zodResolver(recipeRequestSchema),
+    defaultValues: {
+      language: "english", // Default to English
+    }
   });
 
   const processSubmit: SubmitHandler<RecipeRequestFormValues> = async (data) => {
@@ -42,6 +56,7 @@ export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
       cuisine: data.cuisine === "Any" ? undefined : data.cuisine,
       mealType: data.mealType,
       dietaryRestrictions: data.dietaryRestrictions === "None" ? undefined : data.dietaryRestrictions,
+      language: data.language === "english" ? undefined : data.language, // Pass undefined if English for default AI behavior
     };
     await onSubmit(input);
   };
@@ -60,25 +75,24 @@ export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
             id="ingredients"
             {...register("ingredients")}
             placeholder="e.g., chicken breast, tomatoes, onion, garlic, olive oil"
-            rows={4}
+            rows={3}
             className="bg-background/50 border-white/20 focus:border-primary focus:ring-primary"
           />
           {errors.ingredients && <p className="text-sm text-destructive mt-1">{errors.ingredients.message}</p>}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Label htmlFor="cuisine" className="block text-sm font-medium text-foreground/90 mb-1">Cuisine (Optional)</Label>
-            <Select onValueChange={(value) => setValue("cuisine", value)} name="cuisine">
-              <SelectTrigger id="cuisine" className="bg-background/50 border-white/20 focus:ring-primary">
-                <SelectValue placeholder="Select cuisine" />
+            <Label htmlFor="language" className="block text-sm font-medium text-foreground/90 mb-1">Recipe Language</Label>
+            <Select onValueChange={(value) => setValue("language", value)} defaultValue="english" name="language">
+              <SelectTrigger id="language" className="bg-background/50 border-white/20 focus:ring-primary">
+                <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
-                {commonCuisines.map(c => <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>)}
+                {supportedLanguages.map(lang => <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
-
           <div>
             <Label htmlFor="mealType" className="block text-sm font-medium text-foreground/90 mb-1">Meal Type (Optional)</Label>
              <Select onValueChange={(value) => setValue("mealType", value)} name="mealType">
@@ -90,7 +104,20 @@ export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
               </SelectContent>
             </Select>
           </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <Label htmlFor="cuisine" className="block text-sm font-medium text-foreground/90 mb-1">Cuisine (Optional)</Label>
+            <Select onValueChange={(value) => setValue("cuisine", value)} name="cuisine">
+              <SelectTrigger id="cuisine" className="bg-background/50 border-white/20 focus:ring-primary">
+                <SelectValue placeholder="Select cuisine" />
+              </SelectTrigger>
+              <SelectContent>
+                {commonCuisines.map(c => <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <div>
             <Label htmlFor="dietaryRestrictions" className="block text-sm font-medium text-foreground/90 mb-1">Dietary Restrictions (Optional)</Label>
             <Select onValueChange={(value) => setValue("dietaryRestrictions", value)} name="dietaryRestrictions">

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -27,6 +28,10 @@ const GenerateRecipeInputSchema = z.object({
     .string()
     .optional()
     .describe('Any dietary restrictions (e.g., vegan, keto, gluten-free).'),
+  language: z
+    .string()
+    .optional()
+    .describe('The desired language for the recipe (e.g., Hindi, Urdu, Spanish). Default is English if not specified.'),
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
@@ -45,7 +50,14 @@ const prompt = ai.definePrompt({
   name: 'generateRecipePrompt',
   input: {schema: GenerateRecipeInputSchema},
   output: {schema: GenerateRecipeOutputSchema},
-  prompt: `You are a recipe generation AI. Please generate a recipe based on the provided ingredients and preferences.
+  prompt: `You are a recipe generation AI.
+{{#if language}}
+IMPORTANT: Generate the entire recipe (title, ingredients list, and instructions) in the specified language: {{language}}.
+{{else}}
+Generate the recipe in English.
+{{/if}}
+
+Based on the following details:
 
 Ingredients: {{{ingredients}}}
 
@@ -61,15 +73,17 @@ Meal Type: {{{mealType}}}
 Dietary Restrictions: {{{dietaryRestrictions}}}
 {{/if}}
 
-Recipe Title:
+Format the output as follows:
+
+Recipe Title: <The recipe title in the requested language, or English if no language specified>
 
 Ingredients:
-- <list of ingredients>
+- <List each ingredient in the requested language, or English if no language specified>
 
 Instructions:
-1. <step-by-step instructions>
+1. <Provide step-by-step instructions in the requested language, or English if no language specified>
 
-Make sure to include the ingredients and instructions in the format specified.
+Ensure all parts of the recipe (title, ingredients, instructions) are consistently in the requested language.
 `,
 });
 
