@@ -61,10 +61,10 @@ export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
   };
 
   return (
-    <div className="w-full hover-animated-rgb-border-effect rounded-lg">
+    <div className="w-full hover-animated-rgb-border-effect rounded-lg font-headline">
       <div className="hover-animated-rgb-border-inner">
         <form onSubmit={handleSubmit(processSubmit)} className="space-y-6">
-          <h2 className="text-2xl font-headline font-semibold text-primary mb-6 flex items-center">
+          <h2 className="text-2xl font-semibold text-primary mb-6 flex items-center">
             <Utensils className="mr-3 h-7 w-7" />
             What's in your pantry?
           </h2>
