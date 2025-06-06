@@ -103,10 +103,10 @@
     border-radius: inherit; /* Inherit from parent (.hover-animated-rgb-border-effect) */
     padding: 2px; /* This creates the border thickness */
     background: conic-gradient(
-      orange,
-      hsl(330, 100%, 71%), /* hotpink */
-      hsl(var(--destructive)), /* red */
-      orange /* Loop back to orange */
+      hsl(var(--destructive)), /* Red */
+      hsl(330, 100%, 71%), /* hotpink - Pink */
+      orange, /* Orange */
+      hsl(var(--destructive)) /* Loop back to Red */
     );
     -webkit-mask: /* Mask to show only the border part of the gradient */
       linear-gradient(#fff 0 0) content-box, /* The inner "transparent" area */
@@ -127,7 +127,7 @@
   }
 
   .hover-animated-rgb-border-inner {
-    background: hsl(var(--card)); /* Solid card background */
+    background: hsl(var(--card)); /* Solid card background from theme */
     padding: 1.5rem; /* Original GlassCard p-6 equivalent */
     border-radius: var(--radius); /* Match the parent's rounded-lg. Use var(--radius) as it's globally defined for lg */
     /* Ensure content is above the ::before pseudo-element of the parent */
