@@ -9,8 +9,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { LoadingSpinner } from '@/components/feature/loading-spinner';
 
 // List of public paths that don't require authentication within the (main) group
-// Typically, auth pages would be in a separate route group or outside (main)
-const publicPathsWithinMain = ['/some-public-page-in-main']; // Example
+const publicPathsWithinMain: string[] = []; // Initialize as empty array if no specific public paths
 
 export default function MainAppLayout({
   children,
@@ -49,9 +48,9 @@ export default function MainAppLayout({
           }
         } else {
           setIsAuthenticated(false);
-          // If user logs out and is on a protected page, redirect to login
+          // If user logs out and is on a protected page, redirect to welcome page
            if (!pathname.startsWith('/auth') && !publicPathsWithinMain.includes(pathname)) {
-            router.replace('/auth/login');
+            router.replace('/auth/welcome'); 
           }
         }
         // No need to setIsLoading here as this is for subsequent changes
@@ -65,8 +64,11 @@ export default function MainAppLayout({
 
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !pathname.startsWith('/auth') && !publicPathsWithinMain.includes(pathname)) {
-      router.replace('/auth/welcome'); // Or '/auth/login'
+    // This effect handles redirection after the initial auth check or on auth state changes
+    if (!isLoading) { // Only run if initial auth check is complete
+      if (!isAuthenticated && !pathname.startsWith('/auth') && !publicPathsWithinMain.includes(pathname)) {
+        router.replace('/auth/welcome');
+      }
     }
   }, [isLoading, isAuthenticated, router, pathname]);
 
@@ -78,11 +80,9 @@ export default function MainAppLayout({
     );
   }
 
-  // If user is not authenticated and trying to access a protected page,
-  // this check handles the initial load scenario before the effect fully kicks in.
-  // The effect above will handle subsequent changes and redirection.
+  // If initial load is done, and user is NOT authenticated, AND is on a protected path,
+  // this will show a brief loading spinner while the useEffect above handles redirection.
   if (!isAuthenticated && !pathname.startsWith('/auth') && !publicPathsWithinMain.includes(pathname)) {
-     // Show loading or a minimal UI while redirecting, or null if redirect is fast
     return (
        <div className="flex items-center justify-center min-h-screen bg-background">
         <LoadingSpinner text="Redirecting..." size={48} />
@@ -90,15 +90,16 @@ export default function MainAppLayout({
     );
   }
   
-  // If user is authenticated OR is on a public/auth page, render the AppShell or children
+  // If user is authenticated OR is on an auth page OR on a public page within (main)
   if (isAuthenticated || pathname.startsWith('/auth') || publicPathsWithinMain.includes(pathname)) {
-      if (pathname.startsWith('/auth')) { // Auth pages have their own layout
-          return <>{children}</>;
+      if (pathname.startsWith('/auth')) { // Auth pages have their own layout (defined in app/auth/layout.tsx)
+          return <>{children}</>; // Render children directly, auth layout handles its own shell
       }
+      // Authenticated users or users on public paths within (main) get the AppShell
       return <AppShell>{children}</AppShell>;
   }
   
-  // Fallback, should ideally be handled by redirection logic
+  // Fallback: This case should ideally not be reached if redirection logic is correct.
   return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <LoadingSpinner text="Please wait..." size={48} />

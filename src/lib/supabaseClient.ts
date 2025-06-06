@@ -8,29 +8,30 @@ let supabaseInstance: SupabaseClient;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error(
-    "------------------------------------------------------------------------------------------"
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   );
   console.error(
-    "CRITICAL ERROR: Supabase URL or Anon Key is missing from environment variables."
+    "CRITICAL SUPABASE WARNING: Supabase URL or Anon Key is missing from environment variables."
   );
   console.error(
-    "Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are correctly set in your .env.local file."
+    "Expected NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local file."
   );
   console.error(
     "After creating or updating .env.local, YOU MUST RESTART your Next.js development server."
   );
   console.error(
-    "Supabase client is being initialized with DUMMY values. API calls WILL FAIL."
+    "Supabase client is being initialized with DUMMY values. API calls WILL FAIL or be non-functional."
   );
   console.error(
-    "------------------------------------------------------------------------------------------"
+    "This can lead to authentication failures and data operations not working."
+  );
+  console.error(
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   );
 
-  // Initialize with placeholder/dummy values to prevent app crash on import
-  // THIS IS NOT FOR PRODUCTION AND WILL NOT WORK FOR ACTUAL AUTH OR DATA OPERATIONS
   supabaseInstance = createClient('https://dummy-url.supabase.co', 'dummy-anon-key', {
     auth: {
-      persistSession: false, // Don't attempt to persist session with a dummy client
+      persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
     }
