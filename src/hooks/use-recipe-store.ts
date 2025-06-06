@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useCallback } from 'react';
@@ -9,13 +10,14 @@ const MAX_HISTORY_ITEMS = 50;
 export function useRecipeStore() {
   const [recipes, setRecipes] = useLocalStorage<Recipe[]>('smartchef-recipes', []);
 
-  const addRecipeToHistory = useCallback((newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'isFavorite'>, userInput: Recipe['userInput']) => {
+  const addRecipeToHistory = useCallback((newRecipeData: Omit<Recipe, 'id' | 'createdAt' | 'isFavorite' | 'imageUrl'>, userInput: Recipe['userInput']) => {
     const recipeWithMetadata: Recipe = {
-      ...newRecipe,
+      ...newRecipeData,
       id: crypto.randomUUID(),
       createdAt: Date.now(),
       isFavorite: false,
       userInput,
+      // imageUrl will be added later
     };
 
     setRecipes(prevRecipes => {
@@ -23,6 +25,14 @@ export function useRecipeStore() {
       return updatedRecipes.slice(0, MAX_HISTORY_ITEMS);
     });
     return recipeWithMetadata;
+  }, [setRecipes]);
+
+  const updateRecipeImage = useCallback((recipeId: string, imageUrl: string) => {
+    setRecipes(prevRecipes =>
+      prevRecipes.map(recipe =>
+        recipe.id === recipeId ? { ...recipe, imageUrl } : recipe
+      )
+    );
   }, [setRecipes]);
 
   const toggleFavorite = useCallback((recipeId: string) => {
@@ -45,12 +55,13 @@ export function useRecipeStore() {
   const history = recipes.sort((a, b) => b.createdAt - a.createdAt);
 
   return {
-    recipes, // all recipes (for direct access if needed, mainly for history & fav derivation)
+    recipes,
     favorites,
     history,
     addRecipeToHistory,
     toggleFavorite,
     removeRecipe,
     getRecipeById,
+    updateRecipeImage,
   };
 }

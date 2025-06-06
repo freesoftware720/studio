@@ -1,6 +1,7 @@
+
 "use client";
 
-import { Heart, Utensils, BookOpen, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Utensils, BookOpen, Trash2, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/ui/glass-card';
 import type { Recipe } from '@/lib/types';
@@ -8,19 +9,21 @@ import { useRecipeStore } from '@/hooks/use-recipe-store';
 import { ShareButtons } from './share-buttons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface RecipeCardProps {
   recipe: Recipe;
-  onSelectRecipe?: (recipe: Recipe) => void; // For chatbot context
-  showFullDetails?: boolean; // To control if all details are expanded by default
-  isDetailedView?: boolean; // If true, shows share buttons, etc.
+  onSelectRecipe?: (recipe: Recipe) => void;
+  showFullDetails?: boolean;
+  isDetailedView?: boolean;
+  isGeneratingImage?: boolean; 
 }
 
-export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, isDetailedView = false }: RecipeCardProps) {
+export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, isDetailedView = false, isGeneratingImage = false }: RecipeCardProps) {
   const { toggleFavorite, removeRecipe } = useRecipeStore();
 
   const handleFavoriteToggle = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click if any
+    e.stopPropagation();
     toggleFavorite(recipe.id);
   };
   
@@ -28,6 +31,12 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
     e.stopPropagation();
     removeRecipe(recipe.id);
   };
+
+  const placeholderHint = recipe.title 
+    ? recipe.title.toLowerCase().split(/\s+/).slice(0, 2).join(' ') 
+    : "food cooking";
+  
+  const displayImageUrl = recipe.imageUrl || `https://placehold.co/600x300.png`;
 
   const cardContent = (
     <>
@@ -49,14 +58,30 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
         </div>
       </div>
 
-      <Image 
-        src={`https://placehold.co/600x300.png`} 
-        alt={recipe.title}
-        width={600}
-        height={300}
-        className="w-full h-auto rounded-md mb-4 object-cover"
-        data-ai-hint="food cooking"
-      />
+      <div className="relative w-full aspect-[2/1] rounded-md mb-4 overflow-hidden bg-muted/30">
+        <Image 
+          src={displayImageUrl}
+          alt={recipe.title}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className={cn("object-cover transition-opacity duration-500", isGeneratingImage ? "opacity-30" : "opacity-100")}
+          priority={isDetailedView} // Prioritize image if it's the main content on the page
+          data-ai-hint={!recipe.imageUrl ? placeholderHint : undefined}
+        />
+        {isGeneratingImage && !recipe.imageUrl && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white">
+            <Loader2 className="h-10 w-10 animate-spin text-primary mb-2" />
+            <p className="text-sm">Generating Image...</p>
+          </div>
+        )}
+         {!isGeneratingImage && !recipe.imageUrl && (
+           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 text-white/80 opacity-0 hover:opacity-100 transition-opacity duration-300">
+            <ImageIcon className="h-10 w-10 mb-2" />
+            <p className="text-sm text-center">AI image will appear here</p>
+          </div>
+         )}
+      </div>
+
 
       <Accordion type="multiple" defaultValue={showFullDetails ? ["ingredients", "instructions"] : []} className="w-full">
         <AccordionItem value="ingredients">

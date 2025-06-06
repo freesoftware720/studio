@@ -9,6 +9,7 @@ import { LoadingSpinner } from "@/components/feature/loading-spinner";
 import { useRecipeStore } from "@/hooks/use-recipe-store";
 import type { Recipe, RecipeQuestionContext } from "@/lib/types";
 import { generateRecipe, type GenerateRecipeInput } from "@/ai/flows/generate-recipe";
+import { generateRecipeImage } from "@/ai/flows/generate-recipe-image";
 import { AlertTriangle, ChefHat } from "lucide-react";
 import GlassCard from "@/components/ui/glass-card";
 import { useToast } from "@/hooks/use-toast";
@@ -16,34 +17,58 @@ import { useToast } from "@/hooks/use-toast";
 export default function HomePage() {
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { addRecipeToHistory } = useRecipeStore();
+  const { addRecipeToHistory, updateRecipeImage } = useRecipeStore();
   const { toast } = useToast();
   
   const [chatbotContext, setChatbotContext] = useState<RecipeQuestionContext | null>(null);
 
   const handleRecipeGeneration = async (data: GenerateRecipeInput) => {
     setIsLoading(true);
+    setIsGeneratingImage(false);
     setError(null);
     setCurrentRecipe(null);
     setChatbotContext(null);
 
+    let newRecipeBase: Recipe | null = null;
+
     try {
-      const generatedData = await generateRecipe(data);
-      // The `data` object now includes the language, cuisine, etc.
-      const newRecipe = addRecipeToHistory(generatedData, data); 
-      setCurrentRecipe(newRecipe);
+      // 1. Generate recipe text
+      const generatedTextData = await generateRecipe(data);
+      
+      // 2. Create initial recipe object and add to history
+      newRecipeBase = addRecipeToHistory(generatedTextData, data); 
+      setCurrentRecipe(newRecipeBase); // Display text part first
       setChatbotContext({
-        recipeTitle: newRecipe.title,
-        recipeIngredients: newRecipe.ingredients,
-        recipeInstructions: newRecipe.instructions,
+        recipeTitle: newRecipeBase.title,
+        recipeIngredients: newRecipeBase.ingredients,
+        recipeInstructions: newRecipeBase.instructions,
       });
-      toast({ title: "Recipe Generated!", description: `Successfully generated "${newRecipe.title}".`, variant: "default" });
+      toast({ title: "Recipe Generated!", description: `Successfully generated "${newRecipeBase.title}". Image generation started...`, variant: "default" });
+
+      // 3. Asynchronously generate image
+      setIsGeneratingImage(true);
+      try {
+        const imageData = await generateRecipeImage({ recipeTitle: newRecipeBase.title });
+        if (imageData.imageUrl && newRecipeBase) {
+          updateRecipeImage(newRecipeBase.id, imageData.imageUrl);
+          setCurrentRecipe(prev => prev ? { ...prev, imageUrl: imageData.imageUrl } : null);
+           toast({ title: "Image Generated!", description: `Image for "${newRecipeBase.title}" is ready.`, variant: "default" });
+        }
+      } catch (imgErr) {
+        console.error("Failed to generate recipe image:", imgErr);
+        // Non-critical error, recipe text is still useful
+        toast({ title: "Image Generation Issue", description: `Could not generate image for "${newRecipeBase?.title || 'recipe'}". Displaying placeholder.`, variant: "default" });
+      } finally {
+        setIsGeneratingImage(false);
+      }
+
     } catch (err) {
-      console.error("Failed to generate recipe:", err);
+      console.error("Failed to generate recipe text:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
       setError(`Failed to generate recipe. ${errorMessage}`);
-      toast({ title: "Error Generating Recipe", description: errorMessage, variant: "destructive" });
+      toast({ title: "Error Generating Recipe Text", description: errorMessage, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +88,8 @@ export default function HomePage() {
       )}
 
       {isLoading && <LoadingSpinner text="Generating your masterpiece..." className="py-10" />}
+      {!isLoading && isGeneratingImage && currentRecipe && <LoadingSpinner text={`Generating image for "${currentRecipe.title}"...`} className="py-5"/>}
+
 
       {!isLoading && !currentRecipe && !error && (
          <GlassCard>
@@ -77,7 +104,7 @@ export default function HomePage() {
       {currentRecipe && (
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2">
-            <RecipeCard recipe={currentRecipe} showFullDetails={true} isDetailedView={true}/>
+            <RecipeCard recipe={currentRecipe} showFullDetails={true} isDetailedView={true} isGeneratingImage={isGeneratingImage && !currentRecipe.imageUrl}/>
           </div>
           <div className="lg:col-span-1">
              <RecipeChatbot recipeContext={chatbotContext} />
