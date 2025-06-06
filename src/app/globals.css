@@ -1,3 +1,4 @@
+
 @import url('https://fonts.urdufonts.net/css/jameel-noori-nastaleeq.css');
 @tailwind base;
 @tailwind components;
@@ -18,15 +19,15 @@
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 180 100% 50%; /* Electric Blue */
+    --accent: 30 100% 50%; /* Orange */
     --accent-foreground: 0 0% 5.1%; /* Dark text on accent */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 180 100% 50%; /* Electric Blue for rings */
+    --ring: 30 100% 50%; /* Orange for rings */
     --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
+    --chart-2: 30 100% 50%; /* Orange */
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
@@ -52,7 +53,7 @@
     --muted: 0 0% 10%;
     --muted-foreground: 0 0% 60%; /* Dimmer text */
 
-    --accent: 180 100% 50%; /* #00FFFF Electric Blue */
+    --accent: 30 100% 50%; /* Orange */
     --accent-foreground: 0 0% 5.1%; /* Dark text on accent for high contrast */
 
     --destructive: 0 72% 51%; /* A standard red for destructive actions */
@@ -60,10 +61,10 @@
 
     --border: 0 0% 15%; /* Borders slightly lighter than bg */
     --input: 0 0% 10%; /* Input bg */
-    --ring: 180 100% 50%; /* Electric Blue for rings */
+    --ring: 30 100% 50%; /* Orange for rings */
 
     --chart-1: 20 100% 60%; /* Pink-Orange Mixture (Coral/Salmon) */
-    --chart-2: 180 100% 50%; /* Electric Blue */
+    --chart-2: 30 100% 50%; /* Orange */
     --chart-3: 330 100% 71%; /* Hot Pink */
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
