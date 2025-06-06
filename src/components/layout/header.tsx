@@ -43,7 +43,7 @@ export function Header() {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[250px] sm:w-[300px]">
+            <SheetContent side="right" className="w-[250px] sm:w-[300px] font-headline">
               <SheetHeader className="mb-6">
                 <SheetTitle>
                   <Link href="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
