@@ -65,7 +65,7 @@
 
     --chart-1: 20 100% 60%; /* Pink-Orange Mixture (Coral/Salmon) */
     --chart-2: 30 100% 50%; /* Orange */
-    --chart-3: 330 100% 71%; /* Hot Pink */
+    --chart-3: hsl(var(--destructive)); /* Red */
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
@@ -103,11 +103,10 @@
     inset: 0; /* Cover the entire area of the parent */
     border-radius: inherit; /* Inherit from parent (.hover-animated-rgb-border-effect) */
     padding: 2px; /* This creates the border thickness */
-    background: conic-gradient( /* Pink, Red, Orange, looping to Pink */
-      hsl(330, 100%, 71%), /* Hot Pink */
-      hsl(var(--destructive)), /* Red */
+    background: conic-gradient( /* Red, Orange, looping to Red */
+      hsl(var(--destructive)),
       orange, /* Orange */
-      hsl(330, 100%, 71%) /* Loop back to Hot Pink */
+      hsl(var(--destructive)) /* Loop back to Red */
     );
     -webkit-mask: /* Mask to show only the border part of the gradient */
       linear-gradient(#fff 0 0) content-box, /* The inner "transparent" area */
@@ -149,7 +148,7 @@
     inset: 0;
     border-radius: inherit; /* Inherits from .static-gradient-prompt-wrapper */
     padding: 2px; /* Border thickness */
-    background: linear-gradient(45deg, hsl(var(--destructive)), orange, hsl(330, 100%, 71%)); /* Red, Orange, Pink */
+    background: linear-gradient(45deg, hsl(var(--destructive)), orange, hsl(var(--primary))); /* Red, Orange, Primary(Coral) */
     -webkit-mask:
       linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
@@ -177,7 +176,7 @@
     0%, 100% { color: hsl(var(--primary)); } /* Pink-Orange */
     25% { color: hsl(var(--accent)); }    /* Orange */
     50% { color: hsl(var(--destructive)); } /* Red */
-    75% { color: hsl(330, 100%, 71%); } /* Hot Pink */
+    75% { color: hsl(var(--destructive)); } /* Red */
   }
 
   @keyframes chefhat-fill {

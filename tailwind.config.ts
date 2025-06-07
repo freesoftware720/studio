@@ -66,7 +66,6 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
-        hotpink: 'hsl(330, 100%, 71%)', // #FF69B4
       },
       borderRadius: {
         lg: 'var(--radius)', // 1.5rem (24px)
@@ -104,7 +103,7 @@ export default {
           '0%, 100%': { color: 'hsl(var(--primary))' },
           '25%': { color: 'hsl(var(--accent))' },
           '50%': { color: 'hsl(var(--destructive))' },
-          '75%': { color: 'hsl(330, 100%, 71%)' },
+          '75%': { color: 'hsl(var(--destructive))' }, // Changed from hotpink to destructive
         },
         'chefhat-fill': {
           '0%, 100%': { color: 'hsla(var(--primary), 0.3)' },

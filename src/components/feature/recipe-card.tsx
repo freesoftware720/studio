@@ -48,7 +48,7 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" onClick={handleFavoriteToggle} aria-label={recipe.isFavorite ? "Remove from favorites" : "Add to favorites"}>
-            <Heart className={`h-6 w-6 ${recipe.isFavorite ? 'fill-hotpink text-hotpink' : 'text-primary'}`} />
+            <Heart className={`h-6 w-6 ${recipe.isFavorite ? 'fill-destructive text-destructive' : 'text-primary'}`} />
           </Button>
           {isDetailedView && (
              <Button variant="ghost" size="icon" onClick={handleRemoveRecipe} aria-label="Delete recipe">

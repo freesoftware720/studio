@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRecipeStore } from "@/hooks/use-recipe-store";
@@ -15,7 +16,7 @@ export default function FavoritesPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-headline font-bold text-primary flex items-center">
-        <Heart className="mr-3 h-8 w-8 text-hotpink fill-hotpink" />
+        <Heart className="mr-3 h-8 w-8 text-destructive fill-destructive" />
         My Favorite Recipes
       </h1>
       {favorites.length === 0 ? (
