@@ -3,6 +3,7 @@
 
 /**
  * @fileOverview Generates a recipe based on user-provided ingredients and dietary preferences.
+ * Can also operate in a "Surprise Me" mode for more creative recipes.
  *
  * - generateRecipe - A function that generates a recipe.
  * - GenerateRecipeInput - The input type for the generateRecipe function.
@@ -32,6 +33,10 @@ const GenerateRecipeInputSchema = z.object({
     .string()
     .optional()
     .describe('The desired language for the recipe (e.g., Hindi, Urdu, Spanish). Default is English if not specified.'),
+  surpriseMe: z
+    .boolean()
+    .optional()
+    .describe('If true, instructs the AI to be more creative and less constrained by cuisine/mealType for an unexpected recipe.'),
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
@@ -50,7 +55,18 @@ const prompt = ai.definePrompt({
   name: 'generateRecipePrompt',
   input: {schema: GenerateRecipeInputSchema},
   output: {schema: GenerateRecipeOutputSchema},
-  prompt: `You are a recipe generation AI.
+  prompt: `
+{{#if surpriseMe}}
+You are a highly creative and adventurous recipe generation AI. This is a 'Surprise Me' request!
+Your goal is to generate a unique and delightful recipe using the provided ingredients: {{{ingredients}}}.
+{{#if cuisine}}You can take inspiration from {{cuisine}} cuisine, but feel free to deviate wildly for a surprising twist!{{/if}}
+{{#if mealType}}The user suggested {{mealType}} as a meal type, but you can interpret this loosely or suggest an alternative if a more creative idea strikes you.{{/if}}
+{{#if dietaryRestrictions}}Strictly adhere to these dietary restrictions: {{{dietaryRestrictions}}}.{{/if}}
+Prioritize an exciting, unexpected, yet delicious outcome.
+{{#if language}}Generate the entire recipe (title, ingredients list, and instructions) in the specified language: {{language}}.{{else}}Generate the recipe in English.{{/if}}
+
+{{else}}
+You are a recipe generation AI.
 {{#if language}}
 IMPORTANT: Generate the entire recipe (title, ingredients list, and instructions) in the specified language: {{language}}.
 {{else}}
@@ -71,6 +87,7 @@ Meal Type: {{{mealType}}}
 
 {{#if dietaryRestrictions}}
 Dietary Restrictions: {{{dietaryRestrictions}}}
+{{/if}}
 {{/if}}
 
 Format the output as follows:
@@ -98,3 +115,4 @@ const generateRecipeFlow = ai.defineFlow(
     return output!;
   }
 );
+  

@@ -1,24 +1,27 @@
 
-import type { GenerateRecipeOutput, GenerateRecipeInput } from '@/ai/flows/generate-recipe';
-import type { AnalyzeRecipeNutritionOutput } from '@/ai/flows/analyze-recipe-nutrition'; // New import
+import type { GenerateRecipeOutput, GenerateRecipeInput as GenRecipeInputType } from '@/ai/flows/generate-recipe'; // Renamed to avoid conflict
+import type { AnalyzeRecipeNutritionOutput } from '@/ai/flows/analyze-recipe-nutrition';
+
+// Explicitly define GenerateRecipeInput here if it's different or needs extension locally
+// For now, we assume GenRecipeInputType from the flow is sufficient.
+export type RecipeGenerationUserInput = GenRecipeInputType;
+
 
 export interface Recipe extends GenerateRecipeOutput {
   id: string;
-  userId?: string; // Associated user ID from Supabase
-  createdAt: number; // Timestamp for history (client-side representation)
+  userId?: string; 
+  createdAt: number; 
   isFavorite: boolean;
-  imageUrl?: string; // Optional URL for the AI-generated image
-  userInput?: GenerateRecipeInput; // Inputs used to generate the recipe
-  nutritionInfo?: AnalyzeRecipeNutritionOutput; // New field for nutrition
+  imageUrl?: string; 
+  userInput?: RecipeGenerationUserInput; 
+  nutritionInfo?: AnalyzeRecipeNutritionOutput; 
 }
 
 export interface UserPreferences {
-  // user_id is typically the primary key in Supabase table and handled via session
   cuisine?: string;
   mealType?: string;
   dietaryRestrictions?: string;
   language?: string;
-  // Supabase table might have 'updated_at' and 'user_id' (FK to auth.users)
 }
 
 export type RecipeQuestionContext = {
@@ -26,3 +29,4 @@ export type RecipeQuestionContext = {
   recipeIngredients: string[];
   recipeInstructions: string[];
 };
+
