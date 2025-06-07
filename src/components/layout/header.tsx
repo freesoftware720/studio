@@ -2,7 +2,7 @@
 "use client"; // Required for useState and Sheet interactions
 
 import Link from 'next/link';
-import { ChefHat, Menu } from 'lucide-react';
+import { ChefHat, Menu, LogOut } from 'lucide-react';
 import { NavLink } from './nav-link';
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,41 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { supabase } from '@/lib/supabaseClient';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+        variant: "default",
+      });
+      // The onAuthStateChange listener in (main)/layout.tsx should handle redirection.
+      // We can refresh to ensure client and server components are updated.
+      router.refresh(); 
+      if (isMobileMenuOpen) {
+        closeMobileMenu();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Logout Failed",
+        description: error.message || "An error occurred during logout.",
+        variant: "destructive",
+      });
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 font-headline">
@@ -32,10 +62,14 @@ export function Header() {
           <NavLink href="/">Generator</NavLink>
           <NavLink href="/favorites">Favorites</NavLink>
           <NavLink href="/history">History</NavLink>
+          <Button variant="ghost" onClick={handleLogout} className="text-foreground/80 hover:text-primary">
+            <LogOut className="mr-2 h-5 w-5" />
+            Logout
+          </Button>
         </nav>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden"> {/* This div ensures its content (hamburger menu) is hidden on medium screens and larger */}
+        <div className="md:hidden">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -74,6 +108,14 @@ export function Header() {
                 >
                   History
                 </NavLink>
+                <Button 
+                  variant="ghost" 
+                  onClick={handleLogout} 
+                  className="text-lg py-2 justify-start px-3 text-foreground/80 hover:text-primary"
+                >
+                  <LogOut className="mr-2 h-5 w-5" />
+                  Logout
+                </Button>
               </nav>
             </SheetContent>
           </Sheet>
