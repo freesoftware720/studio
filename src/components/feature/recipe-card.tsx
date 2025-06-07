@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Heart, Utensils, BookOpen, Trash2, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Heart, Utensils, BookOpen, Trash2, Image as ImageIcon, Loader2, BarChart3, Info } from 'lucide-react'; // Added BarChart3, Info
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/ui/glass-card';
 import type { Recipe } from '@/lib/types';
@@ -17,9 +17,17 @@ interface RecipeCardProps {
   showFullDetails?: boolean;
   isDetailedView?: boolean;
   isGeneratingImage?: boolean; 
+  isLoadingNutrition?: boolean; // New prop
 }
 
-export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, isDetailedView = false, isGeneratingImage = false }: RecipeCardProps) {
+export function RecipeCard({ 
+  recipe, 
+  onSelectRecipe, 
+  showFullDetails = false, 
+  isDetailedView = false, 
+  isGeneratingImage = false,
+  isLoadingNutrition = false // New prop
+}: RecipeCardProps) {
   const { toggleFavorite, removeRecipe } = useRecipeStore();
 
   const handleFavoriteToggle = (e: React.MouseEvent) => {
@@ -38,6 +46,16 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
   
   const displayImageUrl = recipe.imageUrl || `https://placehold.co/600x300.png`;
 
+  // Determine default open accordion items
+  const defaultAccordionValues: string[] = [];
+  if (showFullDetails) {
+    defaultAccordionValues.push("ingredients", "instructions");
+    if (recipe.nutritionInfo || isLoadingNutrition) { // Open nutrition if available or loading
+        defaultAccordionValues.push("nutrition");
+    }
+  }
+
+
   const cardContent = (
     <>
       <div className="flex justify-between items-start mb-4">
@@ -53,6 +71,7 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
             onClick={handleFavoriteToggle} 
             aria-label={recipe.isFavorite ? "Remove from favorites" : "Add to favorites"}
             className={cn(
+              "transition-colors",
               recipe.isFavorite ? "hover:bg-destructive/20" : "hover:bg-primary/20"
             )}
           >
@@ -79,7 +98,7 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className={cn("object-cover transition-opacity duration-500", isGeneratingImage ? "opacity-30" : "opacity-100")}
-          priority={isDetailedView} // Prioritize image if it's the main content on the page
+          priority={isDetailedView}
           data-ai-hint={!recipe.imageUrl ? placeholderHint : undefined}
         />
         {isGeneratingImage && !recipe.imageUrl && (
@@ -97,7 +116,7 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
       </div>
 
 
-      <Accordion type="multiple" defaultValue={showFullDetails ? ["ingredients", "instructions"] : []} className="w-full">
+      <Accordion type="multiple" defaultValue={defaultAccordionValues} className="w-full">
         <AccordionItem value="ingredients">
           <AccordionTrigger className="text-lg font-semibold text-accent hover:no-underline">
             <Utensils className="mr-2 h-5 w-5 text-accent" /> Ingredients
@@ -122,6 +141,50 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
             </ol>
           </AccordionContent>
         </AccordionItem>
+        { (recipe.nutritionInfo || isLoadingNutrition) && (
+            <AccordionItem value="nutrition">
+                <AccordionTrigger className="text-lg font-semibold text-accent hover:no-underline">
+                    <BarChart3 className="mr-2 h-5 w-5 text-accent" /> Nutrition & Health Tips
+                </AccordionTrigger>
+                <AccordionContent>
+                    {isLoadingNutrition && !recipe.nutritionInfo && (
+                        <div className="flex items-center justify-center py-6 text-muted-foreground">
+                            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                            <span>Analyzing nutrition...</span>
+                        </div>
+                    )}
+                    {recipe.nutritionInfo && (
+                        <div className="space-y-4 mt-2 text-foreground/90">
+                            <div>
+                                <h4 className="font-semibold text-md text-primary">Estimated Nutrition:</h4>
+                                <ul className="list-disc list-inside pl-2 space-y-1 mt-1 text-sm">
+                                    <li>Calories: {recipe.nutritionInfo.estimatedCalories}</li>
+                                    <li>Protein: {recipe.nutritionInfo.proteinGrams}g</li>
+                                    <li>Carbohydrates: {recipe.nutritionInfo.carbsGrams}g</li>
+                                    <li>Fat: {recipe.nutritionInfo.fatGrams}g</li>
+                                </ul>
+                            </div>
+                             {recipe.nutritionInfo.healthTips && recipe.nutritionInfo.healthTips.length > 0 && (
+                                <div>
+                                    <h4 className="font-semibold text-md text-primary">Health Tips:</h4>
+                                    <ul className="list-disc list-inside pl-2 space-y-1 mt-1 text-sm">
+                                    {recipe.nutritionInfo.healthTips.map((tip, index) => (
+                                        <li key={index}>{tip}</li>
+                                    ))}
+                                    </ul>
+                                </div>
+                            )}
+                            {recipe.nutritionInfo.disclaimer && (
+                                <p className="text-xs text-muted-foreground italic mt-3 flex items-start">
+                                    <Info className="h-3 w-3 mr-1.5 mt-0.5 shrink-0"/>
+                                    {recipe.nutritionInfo.disclaimer}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </AccordionContent>
+            </AccordionItem>
+        )}
       </Accordion>
       
       {isDetailedView && <ShareButtons recipe={recipe} />}

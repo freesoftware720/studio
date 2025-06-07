@@ -10,27 +10,30 @@ import { useRecipeStore } from "@/hooks/use-recipe-store";
 import type { Recipe, RecipeQuestionContext } from "@/lib/types";
 import { generateRecipe, type GenerateRecipeInput } from "@/ai/flows/generate-recipe";
 import { generateRecipeImage } from "@/ai/flows/generate-recipe-image";
-import { AlertTriangle, ChefHat, ScanLine } from "lucide-react";
+import { analyzeRecipeNutrition, type AnalyzeRecipeNutritionOutput } from "@/ai/flows/analyze-recipe-nutrition"; // New
+import { AlertTriangle, ChefHat, ScanLine, BarChart3 } from "lucide-react"; // Added BarChart3
 import GlassCard from "@/components/ui/glass-card";
 import { useToast } from "@/hooks/use-toast";
-import { IngredientScannerModal } from "@/components/feature/ingredient-scanner-modal"; // Import the modal
-import { Button } from "@/components/ui/button"; // Import Button
+import { IngredientScannerModal } from "@/components/feature/ingredient-scanner-modal";
+import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingNutrition, setIsLoadingNutrition] = useState(false); // New state for nutrition loading
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { saveRecipe, updateRecipeImage } = useRecipeStore();
+  const { saveRecipe, updateRecipeImage, updateRecipeNutritionInfo } = useRecipeStore(); // Added updateRecipeNutritionInfo
   const { toast } = useToast();
   
   const [chatbotContext, setChatbotContext] = useState<RecipeQuestionContext | null>(null);
-  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false); // State for scanner modal
-  const [ingredientsFromScanner, setIngredientsFromScanner] = useState<string | undefined>(undefined); // State for scanned ingredients
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
+  const [ingredientsFromScanner, setIngredientsFromScanner] = useState<string | undefined>(undefined);
 
   const handleRecipeGeneration = async (data: GenerateRecipeInput) => {
     setIsLoading(true);
     setIsGeneratingImage(false);
+    setIsLoadingNutrition(false);
     setError(null);
     setCurrentRecipe(null);
     setChatbotContext(null);
@@ -38,21 +41,67 @@ export default function HomePage() {
     let newRecipeBase: Recipe | null = null;
 
     try {
+      // 1. Generate Recipe Text
       const generatedTextData = await generateRecipe(data);
-      newRecipeBase = await saveRecipe(generatedTextData, data); 
+      
+      // Immediately set basic recipe to show something to the user
+      const tempRecipe: Omit<Recipe, 'id' | 'createdAt' | 'isFavorite' | 'imageUrl' | 'userId' | 'userInput' | 'nutritionInfo'> & { userInput: GenerateRecipeInput } = {
+        ...generatedTextData,
+        userInput: data,
+      };
+      // Create a temporary partial recipe for UI update
+      const partialRecipeForUi: Partial<Recipe> & GenerateRecipeInput = {
+          title: generatedTextData.title,
+          ingredients: generatedTextData.ingredients,
+          instructions: generatedTextData.instructions,
+          userInput: data,
+      };
+      setCurrentRecipe(partialRecipeForUi as Recipe); // Cast to Recipe for UI, knowing some fields are missing
 
-      if (!newRecipeBase) {
-        throw new Error("Failed to save the recipe to the database.");
+
+      // 2. Save initial recipe (without nutrition yet, that will be an update)
+      // No, we will get nutrition first then save.
+      // newRecipeBase = await saveRecipe(generatedTextData, data); 
+      // if (!newRecipeBase) {
+      //   throw new Error("Failed to save the recipe to the database.");
+      // }
+      // setCurrentRecipe(newRecipeBase); // Update with full recipe from DB
+
+      toast({ title: "Recipe Generated!", description: `Successfully generated "${generatedTextData.title}". Analyzing nutrition...`, variant: "default" });
+
+      // 3. Analyze Nutrition
+      setIsLoadingNutrition(true);
+      let nutritionData: AnalyzeRecipeNutritionOutput | undefined = undefined;
+      try {
+        nutritionData = await analyzeRecipeNutrition({
+          title: generatedTextData.title,
+          ingredients: generatedTextData.ingredients,
+          instructions: generatedTextData.instructions,
+        });
+        setCurrentRecipe(prev => prev ? { ...prev, nutritionInfo: nutritionData } : null); // Update UI with nutrition
+        toast({ title: "Nutrition Analyzed!", description: `Nutritional info for "${generatedTextData.title}" ready.`, variant: "default" });
+      } catch (nutErr) {
+        console.error("Failed to analyze recipe nutrition:", nutErr);
+        toast({ title: "Nutrition Analysis Issue", description: `Could not analyze nutrition for "${generatedTextData.title}".`, variant: "default" });
+        // Continue without nutrition info
+      } finally {
+        setIsLoadingNutrition(false);
       }
 
-      setCurrentRecipe(newRecipeBase);
+      // 4. Save Recipe with Nutrition Info
+      newRecipeBase = await saveRecipe(generatedTextData, data, nutritionData);
+      if (!newRecipeBase) {
+        throw new Error("Failed to save the complete recipe to the database.");
+      }
+      setCurrentRecipe(newRecipeBase); // Update with full recipe from DB including nutrition
+
       setChatbotContext({
         recipeTitle: newRecipeBase.title,
         recipeIngredients: newRecipeBase.ingredients,
         recipeInstructions: newRecipeBase.instructions,
       });
-      toast({ title: "Recipe Generated!", description: `Successfully generated "${newRecipeBase.title}". Image generation started...`, variant: "default" });
 
+      // 5. Generate Image (asynchronously)
       setIsGeneratingImage(true);
       try {
         const imageData = await generateRecipeImage({ recipeTitle: newRecipeBase.title });
@@ -69,18 +118,19 @@ export default function HomePage() {
       }
 
     } catch (err) {
-      console.error("Failed to generate recipe text or save:", err);
+      console.error("Failed to generate recipe, analyze nutrition, or save:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
       setError(`Failed to generate recipe. ${errorMessage}`);
-      toast({ title: "Error Generating Recipe", description: errorMessage, variant: "destructive" });
+      toast({ title: "Error in Recipe Process", description: errorMessage, variant: "destructive" });
     } finally {
       setIsLoading(false);
+      // isLoadingNutrition and isGeneratingImage are handled by their specific blocks
     }
   };
 
   const handleIngredientsDetectedByScanner = (detectedIngredients: string[]) => {
     setIngredientsFromScanner(detectedIngredients.join(", "));
-    setIsScannerModalOpen(false); // Close modal after ingredients are set
+    setIsScannerModalOpen(false);
     toast({ title: "Ingredients Added", description: "Detected ingredients have been added to the form.", variant: "default" });
   };
 
@@ -101,7 +151,7 @@ export default function HomePage() {
       <IngredientForm 
         onSubmit={handleRecipeGeneration} 
         isLoading={isLoading} 
-        initialIngredientsValue={ingredientsFromScanner} // Pass scanned ingredients
+        initialIngredientsValue={ingredientsFromScanner}
       />
 
       {error && (
@@ -114,7 +164,9 @@ export default function HomePage() {
       )}
 
       {isLoading && <LoadingSpinner text="Generating your masterpiece..." className="py-10" />}
-      {!isLoading && isGeneratingImage && currentRecipe && <LoadingSpinner text={`Generating image for "${currentRecipe.title}"...`} className="py-5"/>}
+      {!isLoading && isLoadingNutrition && currentRecipe && <LoadingSpinner text={`Analyzing nutrition for "${currentRecipe.title}"...`} className="py-5"/>}
+      {!isLoading && !isLoadingNutrition && isGeneratingImage && currentRecipe && <LoadingSpinner text={`Generating image for "${currentRecipe.title}"...`} className="py-5"/>}
+
 
       {!isLoading && !currentRecipe && !error && (
          <div className="static-gradient-prompt-wrapper rounded-lg">
@@ -131,7 +183,13 @@ export default function HomePage() {
       {currentRecipe && (
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2">
-            <RecipeCard recipe={currentRecipe} showFullDetails={true} isDetailedView={true} isGeneratingImage={isGeneratingImage && !currentRecipe.imageUrl}/>
+            <RecipeCard 
+              recipe={currentRecipe} 
+              showFullDetails={true} 
+              isDetailedView={true} 
+              isGeneratingImage={isGeneratingImage && !currentRecipe.imageUrl}
+              isLoadingNutrition={isLoadingNutrition && !currentRecipe.nutritionInfo}
+            />
           </div>
           <div className="lg:col-span-1">
              <RecipeChatbot recipeContext={chatbotContext} />

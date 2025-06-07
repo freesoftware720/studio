@@ -1,5 +1,6 @@
 
 import type { GenerateRecipeOutput, GenerateRecipeInput } from '@/ai/flows/generate-recipe';
+import type { AnalyzeRecipeNutritionOutput } from '@/ai/flows/analyze-recipe-nutrition'; // New import
 
 export interface Recipe extends GenerateRecipeOutput {
   id: string;
@@ -8,6 +9,7 @@ export interface Recipe extends GenerateRecipeOutput {
   isFavorite: boolean;
   imageUrl?: string; // Optional URL for the AI-generated image
   userInput?: GenerateRecipeInput; // Inputs used to generate the recipe
+  nutritionInfo?: AnalyzeRecipeNutritionOutput; // New field for nutrition
 }
 
 export interface UserPreferences {

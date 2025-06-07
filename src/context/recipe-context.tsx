@@ -6,6 +6,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import type { Recipe, UserPreferences } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 import type { GenerateRecipeInput } from '@/ai/flows/generate-recipe';
+import type { AnalyzeRecipeNutritionOutput } from '@/ai/flows/analyze-recipe-nutrition'; // New
 import type { PostgrestError } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 
@@ -42,12 +43,14 @@ interface RecipeStore {
   error: PostgrestError | null;
   fetchUserData: () => Promise<void>;
   saveRecipe: (
-    recipeCoreData: Omit<Recipe, 'id' | 'createdAt' | 'isFavorite' | 'imageUrl' | 'userId' | 'userInput'>,
-    userInputData: GenerateRecipeInput
+    recipeCoreData: Omit<Recipe, 'id' | 'createdAt' | 'isFavorite' | 'imageUrl' | 'userId' | 'userInput' | 'nutritionInfo'>,
+    userInputData: GenerateRecipeInput,
+    nutritionInfo?: AnalyzeRecipeNutritionOutput // New
   ) => Promise<Recipe | null>;
   toggleFavorite: (recipeId: string) => Promise<void>;
   removeRecipe: (recipeId: string) => Promise<void>;
   updateRecipeImage: (recipeId: string, imageUrl: string) => Promise<void>;
+  updateRecipeNutritionInfo: (recipeId: string, nutritionInfo: AnalyzeRecipeNutritionOutput) => Promise<void>; // New
   getPreferences: () => Promise<UserPreferences | null>;
   savePreferences: (newPreferences: Omit<UserPreferences, 'user_id'>) => Promise<void>;
   getRecipeById: (recipeId: string) => Recipe | undefined;
@@ -104,6 +107,7 @@ export const RecipeProvider = ({ children }: { children: ReactNode }) => {
         isFavorite: r.is_favorite,
         imageUrl: r.image_url,
         userInput: parseJsonbField<GenerateRecipeInput | undefined>(r.user_input, undefined),
+        nutritionInfo: parseJsonbField<AnalyzeRecipeNutritionOutput | undefined>(r.nutrition_info, undefined), // New
       } as Recipe)) || [];
       setRecipes(parsedRecipes);
     }
@@ -141,8 +145,9 @@ export const RecipeProvider = ({ children }: { children: ReactNode }) => {
   }, [fetchUserData]);
 
   const saveRecipe = useCallback(async (
-    recipeCoreData: Omit<Recipe, 'id' | 'createdAt' | 'isFavorite' | 'imageUrl' | 'userId' | 'userInput'>,
-    userInputData: GenerateRecipeInput
+    recipeCoreData: Omit<Recipe, 'id' | 'createdAt' | 'isFavorite' | 'imageUrl' | 'userId' | 'userInput' | 'nutritionInfo'>,
+    userInputData: GenerateRecipeInput,
+    nutritionInfo?: AnalyzeRecipeNutritionOutput // New
   ): Promise<Recipe | null> => {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -158,6 +163,7 @@ export const RecipeProvider = ({ children }: { children: ReactNode }) => {
       instructions: recipeCoreData.instructions,
       is_favorite: false,
       user_input: userInputData,
+      nutrition_info: nutritionInfo, // New
     };
 
     const { data: savedData, error: insertError } = await supabase
@@ -184,6 +190,7 @@ export const RecipeProvider = ({ children }: { children: ReactNode }) => {
         isFavorite: savedData.is_favorite,
         imageUrl: savedData.image_url,
         userInput: parseJsonbField<GenerateRecipeInput | undefined>(savedData.user_input, undefined),
+        nutritionInfo: parseJsonbField<AnalyzeRecipeNutritionOutput | undefined>(savedData.nutrition_info, undefined), // New
       };
       setRecipes(prev => [newRecipe, ...prev.filter(p => p.id !== newRecipe.id)]);
       return newRecipe;
@@ -202,7 +209,11 @@ export const RecipeProvider = ({ children }: { children: ReactNode }) => {
     const recipe = recipes.find(r => r.id === recipeId);
     if (!recipe) {
       console.error(`Recipe with ID ${recipeId} not found in local state.`);
-      toast({ title: "Error", description: "Recipe not found.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Recipe not found.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -244,6 +255,28 @@ export const RecipeProvider = ({ children }: { children: ReactNode }) => {
       setRecipes(prev => prev.map(r => r.id === recipeId ? { ...r, imageUrl } : r));
     }
   }, [toast]);
+
+  const updateRecipeNutritionInfo = useCallback(async (recipeId: string, nutritionInfo: AnalyzeRecipeNutritionOutput): Promise<void> => {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      toast({ title: "Authentication Error", description: "You must be logged in to update nutrition info.", variant: "destructive" });
+      return;
+    }
+    const { error: updateError } = await supabase
+      .from('recipes')
+      .update({ nutrition_info: nutritionInfo })
+      .eq('id', recipeId)
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error("Error updating recipe nutrition info in Supabase:", updateError);
+      toast({ title: "Failed to Update Nutrition Info", description: updateError.message, variant: "destructive" });
+    } else {
+      setRecipes(prev => prev.map(r => r.id === recipeId ? { ...r, nutritionInfo } : r));
+      toast({ title: "Nutrition Info Updated!", description: `Nutritional details for the recipe are now available.`, variant: "default" });
+    }
+  }, [toast]);
+
 
   const removeRecipe = useCallback(async (recipeId: string): Promise<void> => {
     const userId = await getCurrentUserId();
@@ -331,7 +364,8 @@ export const RecipeProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     recipes, favorites, history, preferences, loading, error,
     fetchUserData, saveRecipe, toggleFavorite, removeRecipe,
-    updateRecipeImage, getPreferences, savePreferences, getRecipeById,
+    updateRecipeImage, updateRecipeNutritionInfo, // Added new function
+    getPreferences, savePreferences, getRecipeById,
   };
 
   return <RecipeContext.Provider value={value}>{children}</RecipeContext.Provider>;
@@ -344,5 +378,3 @@ export const useRecipeContext = () => {
   }
   return context;
 };
-
-    
