@@ -22,6 +22,7 @@ export interface UserPreferences {
   mealType?: string;
   dietaryRestrictions?: string;
   language?: string;
+  maxCookingTimeMinutes?: number; // Added for consistency, though not directly used by preferences UI yet
 }
 
 export type RecipeQuestionContext = {

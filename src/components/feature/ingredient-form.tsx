@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Utensils, Wand2, Mic, MicOff } from "lucide-react"; // Added Wand2 for Surprise Me & Mic icons
+import { Sparkles, Utensils, Wand2, Mic, MicOff, Clock } from "lucide-react"; // Added Clock
 import type { GenerateRecipeInput } from "@/ai/flows/generate-recipe";
 import { useEffect, useState, useRef } from "react"; 
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ const recipeRequestSchema = z.object({
   mealType: z.string().optional(),
   dietaryRestrictions: z.string().optional(),
   language: z.string().optional(),
+  maxCookingTimeMinutes: z.string().optional(), // Stored as string from select, converted to number on submit
 });
 
 type RecipeRequestFormValues = z.infer<typeof recipeRequestSchema>;
@@ -41,6 +42,14 @@ const supportedLanguages = [
   { value: "spanish", label: "Spanish (Español)" },
   { value: "french", label: "French (Français)" },
 ];
+const cookingTimes = [
+  { value: "any", label: "Any Time" },
+  { value: "15", label: "15 Minutes" },
+  { value: "30", label: "30 Minutes" },
+  { value: "45", label: "45 Minutes" },
+  { value: "60", label: "60 Minutes" },
+  { value: "90", label: "90+ Minutes" },
+];
 
 
 export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }: IngredientFormProps) {
@@ -52,6 +61,7 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
       cuisine: "Any",
       mealType: "Any",
       dietaryRestrictions: "None",
+      maxCookingTimeMinutes: "any",
     }
   });
 
@@ -98,7 +108,7 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
 
         recognition.onend = () => {
           // Ensure listening state is false if recognition ends for any reason other than result
-          if (isListening && speechRecognitionRef.current) { // Check if it was actively listening
+          if (isListening && speechRecognitionRef.current) { 
              // Only set if it wasn't stopped by onresult
              // This check is tricky because onresult also calls onend.
              // A small delay or more complex state might be needed if premature stop is an issue.
@@ -146,12 +156,17 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
 
   const prepareSubmitData = (surpriseMe: boolean = false): GenerateRecipeInput => {
     const data = getValues();
+    const maxTime = data.maxCookingTimeMinutes === "any" || data.maxCookingTimeMinutes === "" || data.maxCookingTimeMinutes === undefined
+      ? undefined
+      : parseInt(data.maxCookingTimeMinutes, 10);
+      
     return {
       ingredients: data.ingredients,
       cuisine: data.cuisine === "Any" || data.cuisine === "" ? undefined : data.cuisine,
       mealType: data.mealType === "Any" || data.mealType === "" ? undefined : data.mealType,
       dietaryRestrictions: data.dietaryRestrictions === "None" || data.dietaryRestrictions === "" ? undefined : data.dietaryRestrictions,
       language: data.language === "english" ? undefined : data.language, 
+      maxCookingTimeMinutes: maxTime,
       surpriseMe: surpriseMe,
     };
   };
@@ -210,7 +225,7 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
             {errors.ingredients && <p className="text-sm text-destructive mt-1">{errors.ingredients.message}</p>}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <Label htmlFor="language" className="block text-sm font-medium text-foreground/90 mb-1">Recipe Language</Label>
               <Select onValueChange={(value) => setValue("language", value)} defaultValue="english" name="language" disabled={isLoading}>
@@ -230,6 +245,19 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
                 </SelectTrigger>
                 <SelectContent>
                   {mealTypes.map(mt => <SelectItem key={mt} value={mt === "Any" ? "Any" : mt.toLowerCase()}>{mt}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="maxCookingTimeMinutes" className="block text-sm font-medium text-foreground/90 mb-1 flex items-center">
+                <Clock className="mr-2 h-4 w-4 text-accent" /> Max Cooking Time
+              </Label>
+              <Select onValueChange={(value) => setValue("maxCookingTimeMinutes", value)} defaultValue="any" name="maxCookingTimeMinutes" disabled={isLoading}>
+                <SelectTrigger id="maxCookingTimeMinutes" className="bg-background/50 border-white/20 focus:ring-primary">
+                  <SelectValue placeholder="Select time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cookingTimes.map(ct => <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -281,5 +309,3 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
     </div>
   );
 }
-
-    

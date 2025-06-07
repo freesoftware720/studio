@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Generates a recipe based on user-provided ingredients and dietary preferences.
- * Can also operate in a "Surprise Me" mode for more creative recipes.
+ * Can also operate in a "Surprise Me" mode for more creative recipes, and consider max cooking time.
  *
  * - generateRecipe - A function that generates a recipe.
  * - GenerateRecipeInput - The input type for the generateRecipe function.
@@ -37,6 +37,12 @@ const GenerateRecipeInputSchema = z.object({
     .boolean()
     .optional()
     .describe('If true, instructs the AI to be more creative and less constrained by cuisine/mealType for an unexpected recipe.'),
+  maxCookingTimeMinutes: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('The maximum estimated cooking time in minutes for the recipe. The AI should try to generate a recipe that fits within this time.'),
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
@@ -62,6 +68,7 @@ Your goal is to generate a unique and delightful recipe using the provided ingre
 {{#if cuisine}}You can take inspiration from {{cuisine}} cuisine, but feel free to deviate wildly for a surprising twist!{{/if}}
 {{#if mealType}}The user suggested {{mealType}} as a meal type, but you can interpret this loosely or suggest an alternative if a more creative idea strikes you.{{/if}}
 {{#if dietaryRestrictions}}Strictly adhere to these dietary restrictions: {{{dietaryRestrictions}}}.{{/if}}
+{{#if maxCookingTimeMinutes}}The recipe should be completable within approximately {{maxCookingTimeMinutes}} minutes.{{/if}}
 Prioritize an exciting, unexpected, yet delicious outcome.
 {{#if language}}Generate the entire recipe (title, ingredients list, and instructions) in the specified language: {{language}}.{{else}}Generate the recipe in English.{{/if}}
 
@@ -88,6 +95,10 @@ Meal Type: {{{mealType}}}
 {{#if dietaryRestrictions}}
 Dietary Restrictions: {{{dietaryRestrictions}}}
 {{/if}}
+
+{{#if maxCookingTimeMinutes}}
+Maximum Cooking Time: Please generate a recipe that can reasonably be prepared and cooked within {{maxCookingTimeMinutes}} minutes. This is an estimate, but the recipe steps should reflect this time constraint.
+{{/if}}
 {{/if}}
 
 Format the output as follows:
@@ -101,6 +112,7 @@ Instructions:
 1. <Provide step-by-step instructions in the requested language, or English if no language specified>
 
 Ensure all parts of the recipe (title, ingredients, instructions) are consistently in the requested language.
+If a maximum cooking time was specified, ensure the recipe is appropriate for that duration.
 `,
 });
 
@@ -115,4 +127,4 @@ const generateRecipeFlow = ai.defineFlow(
     return output!;
   }
 );
-  
+
