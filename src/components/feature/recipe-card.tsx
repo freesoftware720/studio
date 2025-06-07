@@ -47,11 +47,25 @@ export function RecipeCard({ recipe, onSelectRecipe, showFullDetails = false, is
           {recipe.userInput?.cuisine && <p className="text-sm text-muted-foreground capitalize">Cuisine: {recipe.userInput.cuisine}</p>}
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="icon" onClick={handleFavoriteToggle} aria-label={recipe.isFavorite ? "Remove from favorites" : "Add to favorites"}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleFavoriteToggle} 
+            aria-label={recipe.isFavorite ? "Remove from favorites" : "Add to favorites"}
+            className={cn(
+              recipe.isFavorite ? "hover:bg-destructive/20" : "hover:bg-primary/20"
+            )}
+          >
             <Heart className={`h-6 w-6 ${recipe.isFavorite ? 'fill-destructive text-destructive' : 'text-primary'}`} />
           </Button>
           {isDetailedView && (
-             <Button variant="ghost" size="icon" onClick={handleRemoveRecipe} aria-label="Delete recipe">
+             <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleRemoveRecipe} 
+                aria-label="Delete recipe"
+                className="hover:bg-destructive/20"
+              >
                 <Trash2 className="h-6 w-6 text-destructive" />
             </Button>
           )}

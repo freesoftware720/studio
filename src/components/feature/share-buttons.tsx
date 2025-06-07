@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -47,17 +48,17 @@ export function ShareButtons({ recipe }: ShareButtonsProps) {
 
   return (
     <div className="flex items-center space-x-2 mt-4">
-      <Button variant="outline" size="icon" onClick={copyLink} aria-label="Copy recipe link" className="border-accent hover:bg-accent/20">
-        <Copy className="h-5 w-5 text-accent" />
+      <Button variant="outline" size="icon" onClick={copyLink} aria-label="Copy recipe link" className="border-primary hover:bg-primary/20">
+        <Copy className="h-5 w-5 text-primary" />
       </Button>
-      <Button variant="outline" size="icon" onClick={() => socialShare('https://twitter.com/intent/tweet?url=')} aria-label="Share on Twitter" className="border-accent hover:bg-accent/20">
-        <Twitter className="h-5 w-5 text-accent" />
+      <Button variant="outline" size="icon" onClick={() => socialShare('https://twitter.com/intent/tweet?url=')} aria-label="Share on Twitter" className="border-primary hover:bg-primary/20">
+        <Twitter className="h-5 w-5 text-primary" />
       </Button>
-      <Button variant="outline" size="icon" onClick={() => socialShare('https://www.facebook.com/sharer/sharer.php?u=')} aria-label="Share on Facebook" className="border-accent hover:bg-accent/20">
-        <Facebook className="h-5 w-5 text-accent" />
+      <Button variant="outline" size="icon" onClick={() => socialShare('https://www.facebook.com/sharer/sharer.php?u=')} aria-label="Share on Facebook" className="border-primary hover:bg-primary/20">
+        <Facebook className="h-5 w-5 text-primary" />
       </Button>
-       <Button variant="outline" size="icon" onClick={() => socialShare('https://www.linkedin.com/sharing/share-offsite/?url=')} aria-label="Share on LinkedIn" className="border-accent hover:bg-accent/20">
-        <Linkedin className="h-5 w-5 text-accent" />
+       <Button variant="outline" size="icon" onClick={() => socialShare('https://www.linkedin.com/sharing/share-offsite/?url=')} aria-label="Share on LinkedIn" className="border-primary hover:bg-primary/20">
+        <Linkedin className="h-5 w-5 text-primary" />
       </Button>
     </div>
   );
