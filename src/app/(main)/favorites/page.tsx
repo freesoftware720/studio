@@ -21,7 +21,7 @@ export default function FavoritesPage() {
       {favorites.length === 0 ? (
         <GlassCard>
           <div className="text-center py-10 text-muted-foreground">
-            <Heart className="mx-auto h-16 w-16 mb-4 text-primary opacity-50" />
+            <Heart className="mx-auto h-16 w-16 mb-4 text-primary opacity-50 animate-bobble" />
             <p className="text-lg">You haven't saved any favorite recipes yet.</p>
             <p className="mt-2">Generate some recipes and click the heart icon to save them!</p>
             <Button asChild variant="link" className="mt-4 text-accent text-lg">
