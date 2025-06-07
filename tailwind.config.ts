@@ -106,8 +106,8 @@ export default {
           '75%': { color: 'hsl(var(--destructive))' },
         },
         'chefhat-fill': {
-          '0%, 100%': { color: 'hsla(var(--primary), 0.3)' },
-          '50%': { color: 'hsla(var(--primary), 1)' },
+          '0%, 100%': { color: 'hsla(var(--accent), 0.4)' }, // Use accent color (orange)
+          '50%': { color: 'hsla(var(--accent), 1)' },
         },
         'subtle-opacity-pulse': {
           '0%, 100%': { opacity: '1' },
@@ -120,7 +120,7 @@ export default {
         'rgb-border-spin': 'rgb-border-spin 4s linear infinite',
         'bobble': 'bobble 2.5s ease-in-out infinite',
         'rgb-icon': 'rgb-icon-animation 3s linear infinite',
-        'chefhat-fill': 'chefhat-fill 1.5s ease-in-out infinite',
+        'chefhat-fill': 'chefhat-fill 2s ease-in-out infinite', // Adjusted duration
         'subtle-opacity-pulse': 'subtle-opacity-pulse 3s ease-in-out infinite',
       },
       boxShadow: {
