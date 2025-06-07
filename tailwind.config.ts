@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Jameel Noori Nastaleeq', 'Poppins', 'sans-serif'],
-        headline: ['Poppins', 'sans-serif'], // Headline can remain Poppins or also include Jameel if desired
+        body: ['Verdana', 'sans-serif'],
+        headline: ['Verdana', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -103,7 +103,7 @@ export default {
           '0%, 100%': { color: 'hsl(var(--primary))' },
           '25%': { color: 'hsl(var(--accent))' },
           '50%': { color: 'hsl(var(--destructive))' },
-          '75%': { color: 'hsl(var(--destructive))' }, // Changed from hotpink to destructive
+          '75%': { color: 'hsl(var(--destructive))' },
         },
         'chefhat-fill': {
           '0%, 100%': { color: 'hsla(var(--primary), 0.3)' },
