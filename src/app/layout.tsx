@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning> {/* Removed className="dark", added suppressHydrationWarning */}
+    <html lang="en" suppressHydrationWarning>{/* Removed className="dark", added suppressHydrationWarning */}
       <head>
         {/* Removed Google Fonts links for Poppins */}
       </head>
