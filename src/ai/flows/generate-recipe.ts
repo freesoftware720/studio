@@ -86,6 +86,7 @@ Ingredients: {{{ingredients}}}
 
 {{#if cuisine}}
 Cuisine: {{{cuisine}}}
+IMPORTANT: Please generate an authentic recipe representative of {{cuisine}} cuisine. Aim for traditional flavors and techniques where appropriate.
 {{/if}}
 
 {{#if mealType}}

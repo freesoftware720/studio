@@ -31,7 +31,20 @@ interface IngredientFormProps {
 }
 
 const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack", "Dessert", "Appetizer", "Side Dish", "Any"];
-const commonCuisines = ["Any", "Italian", "Mexican", "Chinese", "Indian", "American", "Japanese", "Thai", "Mediterranean", "French", "Korean"];
+const commonCuisines = [
+  "Any", 
+  "Indian", 
+  "Pakistani",
+  "Mexican", 
+  "Thai", 
+  "French", 
+  "Italian", 
+  "Chinese", 
+  "American", 
+  "Japanese", 
+  "Mediterranean", 
+  "Korean"
+];
 const commonDietaryRestrictions = ["None", "Vegan", "Vegetarian", "Gluten-Free", "Keto", "Paleo", "Dairy-Free", "Nut-Free"];
 const supportedLanguages = [
   { value: "english", label: "English" },
@@ -271,7 +284,7 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
                   <SelectValue placeholder="Select cuisine" />
                 </SelectTrigger>
                 <SelectContent>
-                  {commonCuisines.map(c => <SelectItem key={c} value={c === "Any" ? "Any" : c.toLowerCase()}>{c}</SelectItem>)}
+                  {commonCuisines.map(c => <SelectItem key={c} value={c === "Any" ? "Any" : c.toLowerCase().replace(/\s+/g, '-')}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -282,7 +295,7 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
                   <SelectValue placeholder="Select restrictions" />
                 </SelectTrigger>
                 <SelectContent>
-                  {commonDietaryRestrictions.map(dr => <SelectItem key={dr} value={dr === "None" ? "None" : dr.toLowerCase()}>{dr}</SelectItem>)}
+                  {commonDietaryRestrictions.map(dr => <SelectItem key={dr} value={dr === "None" ? "None" : dr.toLowerCase().replace(/\s+/g, '-')}>{dr}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -309,3 +322,4 @@ export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }:
     </div>
   );
 }
+
