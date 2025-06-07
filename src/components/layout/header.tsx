@@ -17,6 +17,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/context/theme-context'; // Updated import for consistency
+import { cn } from '@/lib/utils'; // Added missing import
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
