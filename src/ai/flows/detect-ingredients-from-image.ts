@@ -53,8 +53,10 @@ const detectIngredientsFlow = ai.defineFlow(
         outputSchema: DetectIngredientsOutputSchema,
     },
     async (input) => {
-        const { output } = await prompt(input, { model: 'googleai/gemini-pro-vision' });
+        // Updated to use gemini-1.5-flash which supports vision
+        const { output } = await prompt(input, { model: 'googleai/gemini-1.5-flash' }); 
         // Ensure that if output is null or undefined, we still return the correct schema shape.
         return output || { detectedIngredients: [] };
     }
 );
+
