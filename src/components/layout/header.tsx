@@ -62,7 +62,7 @@ export function Header() {
           <NavLink href="/">Generator</NavLink>
           <NavLink href="/favorites">Favorites</NavLink>
           <NavLink href="/history">History</NavLink>
-          <Button variant="ghost" onClick={handleLogout} className="text-foreground/80 hover:text-primary">
+          <Button variant="ghost" onClick={handleLogout} className="text-foreground/80 hover:bg-primary/20 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
             <LogOut className="mr-2 h-5 w-5" />
             Logout
           </Button>
@@ -111,7 +111,7 @@ export function Header() {
                 <Button 
                   variant="ghost" 
                   onClick={handleLogout} 
-                  className="text-lg py-2 justify-start px-3 text-foreground/80 hover:text-primary"
+                  className="text-lg py-2 justify-start px-3 text-foreground/80 hover:bg-primary/20 hover:text-primary rounded-md font-medium transition-colors"
                 >
                   <LogOut className="mr-2 h-5 w-5" />
                   Logout
