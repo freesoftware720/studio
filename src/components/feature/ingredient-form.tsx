@@ -5,12 +5,13 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; // Keep Input if used elsewhere or for future
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, Utensils } from "lucide-react";
 import type { GenerateRecipeInput } from "@/ai/flows/generate-recipe";
+import { useEffect } from "react"; // Import useEffect
 
 const recipeRequestSchema = z.object({
   ingredients: z.string().min(3, "Please list at least one ingredient."),
@@ -25,6 +26,7 @@ type RecipeRequestFormValues = z.infer<typeof recipeRequestSchema>;
 interface IngredientFormProps {
   onSubmit: (data: GenerateRecipeInput) => Promise<void>;
   isLoading: boolean;
+  initialIngredientsValue?: string; // New prop for scanned ingredients
 }
 
 const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack", "Dessert", "Appetizer", "Side Dish"];
@@ -41,13 +43,22 @@ const supportedLanguages = [
 ];
 
 
-export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
+export function IngredientForm({ onSubmit, isLoading, initialIngredientsValue }: IngredientFormProps) {
   const { register, handleSubmit, control, formState: { errors }, setValue } = useForm<RecipeRequestFormValues>({
     resolver: zodResolver(recipeRequestSchema),
     defaultValues: {
-      language: "english", 
+      language: "english",
+      ingredients: "", // Initialize ingredients as empty or from prop
     }
   });
+
+  // Effect to update ingredients field when initialIngredientsValue prop changes
+  useEffect(() => {
+    if (initialIngredientsValue !== undefined) {
+      setValue("ingredients", initialIngredientsValue, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [initialIngredientsValue, setValue]);
+
 
   const processSubmit: SubmitHandler<RecipeRequestFormValues> = async (data) => {
     const input: GenerateRecipeInput = {
@@ -74,7 +85,7 @@ export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
             <Textarea
               id="ingredients"
               {...register("ingredients")}
-              placeholder="e.g., chicken breast, tomatoes, onion, garlic, olive oil"
+              placeholder="e.g., chicken breast, tomatoes, onion, garlic, olive oil, or use the scanner!"
               rows={3}
               className="bg-background/50 border-white/20 focus:border-primary focus-visible:ring-2 focus-visible:ring-primary"
             />

@@ -10,19 +10,23 @@ import { useRecipeStore } from "@/hooks/use-recipe-store";
 import type { Recipe, RecipeQuestionContext } from "@/lib/types";
 import { generateRecipe, type GenerateRecipeInput } from "@/ai/flows/generate-recipe";
 import { generateRecipeImage } from "@/ai/flows/generate-recipe-image";
-import { AlertTriangle, ChefHat } from "lucide-react";
+import { AlertTriangle, ChefHat, ScanLine } from "lucide-react";
 import GlassCard from "@/components/ui/glass-card";
 import { useToast } from "@/hooks/use-toast";
+import { IngredientScannerModal } from "@/components/feature/ingredient-scanner-modal"; // Import the modal
+import { Button } from "@/components/ui/button"; // Import Button
 
 export default function HomePage() {
   const [currentRecipe, setCurrentRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { saveRecipe, updateRecipeImage } = useRecipeStore(); // Changed from addRecipeToHistory
+  const { saveRecipe, updateRecipeImage } = useRecipeStore();
   const { toast } = useToast();
   
   const [chatbotContext, setChatbotContext] = useState<RecipeQuestionContext | null>(null);
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false); // State for scanner modal
+  const [ingredientsFromScanner, setIngredientsFromScanner] = useState<string | undefined>(undefined); // State for scanned ingredients
 
   const handleRecipeGeneration = async (data: GenerateRecipeInput) => {
     setIsLoading(true);
@@ -34,18 +38,14 @@ export default function HomePage() {
     let newRecipeBase: Recipe | null = null;
 
     try {
-      // 1. Generate recipe text
       const generatedTextData = await generateRecipe(data);
-      
-      // 2. Save initial recipe object to DB (which also adds to local state via store)
-      // Pass both core recipe data and original user input
       newRecipeBase = await saveRecipe(generatedTextData, data); 
 
       if (!newRecipeBase) {
         throw new Error("Failed to save the recipe to the database.");
       }
 
-      setCurrentRecipe(newRecipeBase); // Display text part first
+      setCurrentRecipe(newRecipeBase);
       setChatbotContext({
         recipeTitle: newRecipeBase.title,
         recipeIngredients: newRecipeBase.ingredients,
@@ -53,15 +53,13 @@ export default function HomePage() {
       });
       toast({ title: "Recipe Generated!", description: `Successfully generated "${newRecipeBase.title}". Image generation started...`, variant: "default" });
 
-      // 3. Asynchronously generate image
       setIsGeneratingImage(true);
       try {
         const imageData = await generateRecipeImage({ recipeTitle: newRecipeBase.title });
         if (imageData.imageUrl && newRecipeBase) {
-          await updateRecipeImage(newRecipeBase.id, imageData.imageUrl); // await this
-          // The store update should trigger a re-render if setCurrentRecipe relies on store's recipe object
-           setCurrentRecipe(prev => prev && prev.id === newRecipeBase!.id ? { ...prev, imageUrl: imageData.imageUrl } : prev);
-           toast({ title: "Image Generated!", description: `Image for "${newRecipeBase.title}" is ready.`, variant: "default" });
+          await updateRecipeImage(newRecipeBase.id, imageData.imageUrl);
+          setCurrentRecipe(prev => prev && prev.id === newRecipeBase!.id ? { ...prev, imageUrl: imageData.imageUrl } : prev);
+          toast({ title: "Image Generated!", description: `Image for "${newRecipeBase.title}" is ready.`, variant: "default" });
         }
       } catch (imgErr) {
         console.error("Failed to generate recipe image:", imgErr);
@@ -80,9 +78,31 @@ export default function HomePage() {
     }
   };
 
+  const handleIngredientsDetectedByScanner = (detectedIngredients: string[]) => {
+    setIngredientsFromScanner(detectedIngredients.join(", "));
+    setIsScannerModalOpen(false); // Close modal after ingredients are set
+    toast({ title: "Ingredients Added", description: "Detected ingredients have been added to the form.", variant: "default" });
+  };
+
   return (
     <div className="space-y-8">
-      <IngredientForm onSubmit={handleRecipeGeneration} isLoading={isLoading} />
+      <div className="text-center mb-6">
+        <Button 
+          onClick={() => setIsScannerModalOpen(true)} 
+          variant="outline" 
+          size="lg"
+          className="bg-accent text-accent-foreground hover:bg-accent/90 border-accent hover:border-accent/90 shadow-md hover:shadow-lg transition-all duration-200 ease-in-out transform hover:scale-105 group"
+        >
+          <ScanLine className="mr-2 h-6 w-6 transition-transform duration-300 group-hover:animate-pulse" />
+          Scan Ingredients with AI Camera
+        </Button>
+      </div>
+
+      <IngredientForm 
+        onSubmit={handleRecipeGeneration} 
+        isLoading={isLoading} 
+        initialIngredientsValue={ingredientsFromScanner} // Pass scanned ingredients
+      />
 
       {error && (
         <GlassCard className="border-destructive/50">
@@ -96,14 +116,13 @@ export default function HomePage() {
       {isLoading && <LoadingSpinner text="Generating your masterpiece..." className="py-10" />}
       {!isLoading && isGeneratingImage && currentRecipe && <LoadingSpinner text={`Generating image for "${currentRecipe.title}"...`} className="py-5"/>}
 
-
       {!isLoading && !currentRecipe && !error && (
          <div className="static-gradient-prompt-wrapper rounded-lg">
           <div className="static-gradient-prompt-inner">
             <div className="text-center py-10 text-muted-foreground">
               <ChefHat className="mx-auto h-16 w-16 mb-4 text-primary opacity-50 animate-bobble" />
               <h2 className="text-xl font-semibold mb-2">Welcome to SmartChef!</h2>
-              <p>Enter your ingredients and preferences above, and let our AI whip up a delicious recipe for you.</p>
+              <p>Enter your ingredients and preferences above, or use the AI scanner, and let our AI whip up a delicious recipe for you.</p>
             </div>
           </div>
         </div>
@@ -119,6 +138,12 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      <IngredientScannerModal 
+        isOpen={isScannerModalOpen}
+        onClose={() => setIsScannerModalOpen(false)}
+        onIngredientsDetected={handleIngredientsDetectedByScanner}
+      />
     </div>
   );
 }
