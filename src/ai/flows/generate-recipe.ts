@@ -94,7 +94,7 @@ const generateRecipeFlow = ai.defineFlow(
     outputSchema: GenerateRecipeOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(input, {model: 'googleai/gemini-2.0-flash'});
     return output!;
   }
 );

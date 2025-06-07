@@ -119,6 +119,13 @@ export function useRecipeStore() {
       .single();
 
     if (insertError) {
+      console.error("Error saving recipe to Supabase. Details:", {
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+        code: insertError.code,
+        rawError: insertError 
+      });
       setError(insertError);
       return null;
     }
@@ -277,3 +284,4 @@ export function useRecipeStore() {
     getRecipeById,
   };
 }
+
