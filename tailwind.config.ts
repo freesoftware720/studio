@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -109,6 +110,10 @@ export default {
           '0%, 100%': { color: 'hsla(var(--primary), 0.3)' },
           '50%': { color: 'hsla(var(--primary), 1)' },
         },
+        'subtle-opacity-pulse': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.85' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -117,6 +122,7 @@ export default {
         'bobble': 'bobble 2.5s ease-in-out infinite',
         'rgb-icon': 'rgb-icon-animation 3s linear infinite',
         'chefhat-fill': 'chefhat-fill 1.5s ease-in-out infinite',
+        'subtle-opacity-pulse': 'subtle-opacity-pulse 3s ease-in-out infinite',
       },
       boxShadow: {
         'glass': '0 4px 30px rgba(0, 0, 0, 0.8)',

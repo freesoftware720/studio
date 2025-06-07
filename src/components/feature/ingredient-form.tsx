@@ -66,7 +66,7 @@ export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
         <form onSubmit={handleSubmit(processSubmit)} className="space-y-6">
           <h2 className="text-2xl font-semibold text-primary mb-6 flex items-center">
             <Utensils className="mr-3 h-7 w-7" />
-            What's in your pantry?
+            <span className="animate-subtle-opacity-pulse">Transform ingredients into inspiration — instantly.</span>
           </h2>
           
           <div>
