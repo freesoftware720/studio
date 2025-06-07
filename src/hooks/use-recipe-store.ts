@@ -6,12 +6,14 @@ import type { Recipe, UserPreferences } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 import type { GenerateRecipeInput } from '@/ai/flows/generate-recipe';
 import type { PostgrestError } from '@supabase/supabase-js';
+import { useToast } from '@/hooks/use-toast'; // Import useToast
 
 export function useRecipeStore() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<PostgrestError | null>(null);
+  const { toast } = useToast(); // Initialize toast
 
   const getCurrentUserId = async (): Promise<string | undefined> => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -27,12 +29,9 @@ export function useRecipeStore() {
       setRecipes([]);
       setPreferences(null);
       setLoading(false);
-      // Consider setting an error or handling anonymous state if needed
-      // setError({ message: 'User not authenticated', details: '', hint: '', code: '401' });
       return;
     }
 
-    // Fetch recipes
     const { data: recipeData, error: recipeError } = await supabase
       .from('recipes')
       .select('*')
@@ -47,9 +46,7 @@ export function useRecipeStore() {
         ...r,
         id: r.id,
         userId: r.user_id,
-        // Ensure created_at is a number (timestamp)
         createdAt: new Date(r.created_at).getTime(),
-        // Parse JSON string fields if necessary
         ingredients: typeof r.ingredients === 'string' ? JSON.parse(r.ingredients) : r.ingredients,
         instructions: typeof r.instructions === 'string' ? JSON.parse(r.instructions) : r.instructions,
         userInput: typeof r.user_input === 'string' ? JSON.parse(r.user_input) : r.user_input,
@@ -59,7 +56,6 @@ export function useRecipeStore() {
       setRecipes(parsedRecipes);
     }
 
-    // Fetch preferences
     const { data: prefData, error: prefError } = await supabase
       .from('user_preferences')
       .select('*')
@@ -67,20 +63,18 @@ export function useRecipeStore() {
       .maybeSingle();
 
     if (prefError) {
-      // Append to existing error if recipeError also occurred
       setError(prevError => prevError ? { ...prevError, ...prefError, message: `${prevError.message}; ${prefError.message}` } : prefError);
       setPreferences(null);
     } else {
       setPreferences(prefData as UserPreferences | null);
     }
     setLoading(false);
-  }, []);
+  }, []); // Removed toast from dependencies as fetchUserData doesn't use it directly
 
   useEffect(() => {
     fetchUserData();
     
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      // Re-fetch data if user logs in or out
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
         fetchUserData();
       }
@@ -98,18 +92,21 @@ export function useRecipeStore() {
     const userId = await getCurrentUserId();
     if (!userId) {
       setError({ message: 'User not authenticated for saving recipe.', details: '', hint: '', code: '401' });
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to save a recipe.",
+        variant: "destructive",
+      });
       return null;
     }
 
     const recipeToSaveToDb = {
       user_id: userId,
-      // created_at is handled by Supabase default or trigger
       title: recipeCoreData.title,
-      ingredients: recipeCoreData.ingredients, // Assumes these are arrays/objects suitable for JSONB
+      ingredients: recipeCoreData.ingredients,
       instructions: recipeCoreData.instructions,
-      is_favorite: false, // Default
+      is_favorite: false,
       user_input: userInputData,
-      // imageUrl is updated separately
     };
 
     const { data: savedData, error: insertError } = await supabase
@@ -127,6 +124,11 @@ export function useRecipeStore() {
         rawError: insertError 
       });
       setError(insertError);
+      toast({
+        title: "Failed to Save Recipe",
+        description: insertError.message || "Could not save the recipe to the database.",
+        variant: "destructive",
+      });
       return null;
     }
 
@@ -136,7 +138,7 @@ export function useRecipeStore() {
         userId: savedData.user_id,
         createdAt: new Date(savedData.created_at).getTime(),
         title: savedData.title,
-        ingredients: savedData.ingredients, // Assume Supabase returns them parsed if JSONB
+        ingredients: savedData.ingredients,
         instructions: savedData.instructions,
         isFavorite: savedData.is_favorite,
         imageUrl: savedData.image_url,
@@ -146,17 +148,30 @@ export function useRecipeStore() {
       return newRecipe;
     }
     return null;
-  }, []);
+  }, [toast]); // Added toast to dependencies
 
   const toggleFavorite = useCallback(async (recipeId: string): Promise<void> => {
     const userId = await getCurrentUserId();
     if (!userId) {
       setError({ message: 'User not authenticated for toggling favorite.', details: '', hint: '', code: '401' });
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to change favorites.",
+        variant: "destructive",
+      });
       return;
     }
 
     const recipe = recipes.find(r => r.id === recipeId);
-    if (!recipe) return;
+    if (!recipe) {
+      console.error(`Recipe with ID ${recipeId} not found in local state.`);
+      toast({
+        title: "Error",
+        description: "Recipe not found.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const newFavStatus = !recipe.isFavorite;
     const { error: updateError } = await supabase
@@ -167,15 +182,37 @@ export function useRecipeStore() {
 
     if (updateError) {
       setError(updateError);
+      console.error("Error toggling favorite in Supabase:", {
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint,
+        code: updateError.code,
+        rawError: updateError
+      });
+      toast({
+        title: "Failed to Update Favorite",
+        description: updateError.message || "Could not update favorite status.",
+        variant: "destructive",
+      });
     } else {
       setRecipes(prev => prev.map(r => r.id === recipeId ? { ...r, isFavorite: newFavStatus } : r));
+      toast({
+        title: newFavStatus ? "Added to Favorites" : "Removed from Favorites",
+        description: `"${recipe.title}" has been ${newFavStatus ? 'added to' : 'removed from'} your favorites.`,
+        variant: "default",
+      });
     }
-  }, [recipes]);
+  }, [recipes, toast]); // Added toast to dependencies
 
   const updateRecipeImage = useCallback(async (recipeId: string, imageUrl: string): Promise<void> => {
     const userId = await getCurrentUserId();
     if (!userId) {
       setError({ message: 'User not authenticated for updating image.', details: '', hint: '', code: '401' });
+       toast({
+        title: "Authentication Error",
+        description: "You must be logged in to update images.",
+        variant: "destructive",
+      });
       return;
     }
     const { error: updateError } = await supabase
@@ -186,17 +223,31 @@ export function useRecipeStore() {
 
     if (updateError) {
       setError(updateError);
+       toast({
+        title: "Failed to Update Image",
+        description: updateError.message || "Could not update recipe image.",
+        variant: "destructive",
+      });
     } else {
       setRecipes(prev => prev.map(r => r.id === recipeId ? { ...r, imageUrl } : r));
+      // Optionally, add a success toast for image update if needed
     }
-  }, []);
+  }, [toast]); // Added toast to dependencies
 
   const removeRecipe = useCallback(async (recipeId: string): Promise<void> => {
     const userId = await getCurrentUserId();
     if (!userId) {
       setError({ message: 'User not authenticated for removing recipe.', details: '', hint: '', code: '401' });
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to remove recipes.",
+        variant: "destructive",
+      });
       return;
     }
+    
+    const recipeToRemove = recipes.find(r => r.id === recipeId);
+
     const { error: deleteError } = await supabase
       .from('recipes')
       .delete()
@@ -205,15 +256,24 @@ export function useRecipeStore() {
 
     if (deleteError) {
       setError(deleteError);
+      toast({
+        title: "Failed to Remove Recipe",
+        description: deleteError.message || "Could not remove the recipe.",
+        variant: "destructive",
+      });
     } else {
       setRecipes(prev => prev.filter(r => r.id !== recipeId));
+      toast({
+        title: "Recipe Removed",
+        description: `"${recipeToRemove?.title || 'The recipe'}" has been removed.`,
+        variant: "default",
+      });
     }
-  }, []);
+  }, [recipes, toast]); // Added toast to dependencies
 
   const getPreferences = useCallback(async (): Promise<UserPreferences | null> => {
     const userId = await getCurrentUserId();
     if (!userId) {
-      // setError({ message: 'User not authenticated for getting preferences.', details: '', hint: '', code: '401' });
       setPreferences(null);
       return null;
     }
@@ -232,15 +292,19 @@ export function useRecipeStore() {
     }
     setPreferences(data as UserPreferences | null);
     return data as UserPreferences | null;
-  }, []);
+  }, []); 
   
   const savePreferences = useCallback(async (newPreferences: UserPreferences): Promise<void> => {
     const userId = await getCurrentUserId();
     if (!userId) {
       setError({ message: 'User not authenticated for saving preferences.', details: '', hint: '', code: '401' });
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to save preferences.",
+        variant: "destructive",
+      });
       return;
     }
-    // Ensure user_id is part of the object being upserted if it's not a PK handled by RLS implicitly
     const preferencesToSave = { ...newPreferences, user_id: userId };
 
     const { error: upsertError } = await supabase
@@ -249,39 +313,44 @@ export function useRecipeStore() {
 
     if (upsertError) {
       setError(upsertError);
+      toast({
+        title: "Failed to Save Preferences",
+        description: upsertError.message || "Could not save your preferences.",
+        variant: "destructive",
+      });
     } else {
-      setPreferences(newPreferences); // Optimistically update local state
+      setPreferences(newPreferences);
+      toast({
+        title: "Preferences Saved",
+        description: "Your preferences have been updated.",
+        variant: "default",
+      });
     }
-  }, []);
+  }, [toast]); // Added toast to dependencies
 
   const getRecipeById = useCallback((recipeId: string): Recipe | undefined => {
     return recipes.find(recipe => recipe.id === recipeId);
   }, [recipes]);
 
   const favorites = recipes.filter(recipe => recipe.isFavorite).sort((a, b) => b.createdAt - a.createdAt);
-  // History is essentially all recipes fetched, already sorted by Supabase query or client-side
   const history = [...recipes].sort((a, b) => b.createdAt - a.createdAt);
 
 
   return {
-    recipes, // The raw list of recipes for the current user
-    favorites, // Derived: Filtered and sorted favorite recipes
-    history,   // Derived: All recipes for the user, sorted by creation date
-    preferences, // Current user's preferences
+    recipes,
+    favorites,
+    history,
+    preferences,
     loading,
     error,
     
-    // Functions:
-    getUserRecipes: fetchUserData, // Function to explicitly re-fetch all recipes and preferences for the user
+    getUserRecipes: fetchUserData,
     saveRecipe,
     toggleFavorite,
     removeRecipe,
     updateRecipeImage,
-    getPreferences, // Fetches and returns preferences, also updates local state
-    savePreferences, // Saves/updates preferences
-
-    // Utility
+    getPreferences,
+    savePreferences,
     getRecipeById,
   };
 }
-
