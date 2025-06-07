@@ -6,68 +6,82 @@
 
 @layer base {
   :root {
-    /* These are fallbacks if .dark is not applied, but we will apply .dark to html tag */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    /* Light Mode Theme */
+    --background: 0 0% 98%;             /* Almost white, very light gray */
+    --foreground: 0 0% 10%;             /* Dark gray for text */
+    --card: 0 0% 100%;                  /* White cards */
+    --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 20 100% 60%; /* Pink-Orange Mixture (Coral/Salmon) */
-    --primary-foreground: 0 0% 98%; /* Light text on primary */
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 30 100% 50%; /* Orange */
-    --accent-foreground: 0 0% 5.1%; /* Dark text on accent */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 30 100% 50%; /* Orange for rings */
-    --chart-1: 12 76% 61%;
-    --chart-2: 30 100% 50%; /* Orange */
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 1.5rem; /* 24px */
+    --popover-foreground: 0 0% 10%;
+    --primary: 20 90% 55%;              /* Coral/Salmon, vibrant */
+    --primary-foreground: 0 0% 100%;    /* White text on primary */
+    --secondary: 0 0% 94%;             /* Light gray */
+    --secondary-foreground: 0 0% 20%;
+    --muted: 0 0% 92%;                  /* Muted gray */
+    --muted-foreground: 0 0% 40%;
+    --accent: 30 95% 55%;               /* Orange, vibrant */
+    --accent-foreground: 25 100% 10%;   /* Dark brown/orange text on accent */
+    --destructive: 0 80% 50%;           /* Red */
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 85%;
+    --input: 0 0% 90%;
+    --ring: 20 90% 55%;                 /* Coral for rings */
+    
+    --chart-1: 20 90% 55%;              /* Primary */
+    --chart-2: 30 95% 55%;              /* Accent */
+    --chart-3: 0 80% 50%;               /* Destructive */
+    --chart-4: 250 70% 60%;             /* Purple */
+    --chart-5: 160 70% 50%;             /* Teal */
+    --radius: 1.5rem;                   /* 24px */
+
+    /* Sidebar variables for Light Mode */
+    --sidebar-background: 0 0% 96%;        /* Slightly different off-white */
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-border: hsl(var(--border));
+    --sidebar-ring: hsl(var(--ring));
   }
 
   .dark {
-    --background: 0 0% 5.1%; /* #0D0D0D Deep Charcoal Gray */
-    --foreground: 0 0% 95%; /* Light gray for text */
-
-    --card: 0 0% 8%; /* Slightly lighter than background for non-glass cards */
+    /* Dark Mode Theme (mostly unchanged, ensuring consistency) */
+    --background: 0 0% 5.1%;           /* #0D0D0D Deep Charcoal Gray */
+    --foreground: 0 0% 95%;           /* Light gray for text */
+    --card: 0 0% 8%;                  /* Slightly lighter than background */
     --card-foreground: 0 0% 95%;
-
-    --popover: 0 0% 7%; /* Darker popover */
+    --popover: 0 0% 7%;               /* Darker popover */
     --popover-foreground: 0 0% 95%;
-
-    --primary: 20 100% 60%; /* Pink-Orange Mixture (Coral/Salmon) */
-    --primary-foreground: 0 0% 98%; /* Light text on primary */
-
-    --secondary: 0 0% 12%; /* A slightly lighter gray than background */
+    --primary: 20 100% 60%;           /* Coral/Salmon (original dark primary) */
+    --primary-foreground: 0 0% 98%;   /* Light text on primary */
+    --secondary: 0 0% 12%;            /* Slightly lighter gray than background */
     --secondary-foreground: 0 0% 95%;
-
     --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 60%; /* Dimmer text */
-
-    --accent: 30 100% 50%; /* Orange */
-    --accent-foreground: 0 0% 5.1%; /* Dark text on accent for high contrast */
-
-    --destructive: 0 72% 51%; /* A standard red for destructive actions */
+    --muted-foreground: 0 0% 60%;     /* Dimmer text */
+    --accent: 30 100% 50%;            /* Orange (original dark accent) */
+    --accent-foreground: 0 0% 5.1%;   /* Dark text on accent */
+    --destructive: 0 72% 51%;         /* Standard red */
     --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 15%;               /* Borders slightly lighter than bg */
+    --input: 0 0% 10%;                /* Input bg */
+    --ring: 30 100% 50%;              /* Orange for rings */
 
-    --border: 0 0% 15%; /* Borders slightly lighter than bg */
-    --input: 0 0% 10%; /* Input bg */
-    --ring: 30 100% 50%; /* Orange for rings */
-
-    --chart-1: 20 100% 60%; /* Pink-Orange Mixture (Coral/Salmon) */
-    --chart-2: 30 100% 50%; /* Orange */
-    --chart-3: hsl(var(--destructive)); /* Red */
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 20 100% 60%;           /* Primary (dark theme version) */
+    --chart-2: 30 100% 50%;           /* Accent (dark theme version) */
+    --chart-3: 0 72% 51%;             /* Destructive (dark theme version) */
+    --chart-4: 43 74% 66%;             /* Kept from original dark for variety */
+    --chart-5: 27 87% 67%;             /* Kept from original dark for variety */
+    
+    /* Sidebar variables for Dark Mode */
+    --sidebar-background: 0 0% 7%;         /* Slightly different dark */
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-border: hsl(var(--border));
+    --sidebar-ring: hsl(var(--ring));
   }
 }
 
@@ -77,10 +91,16 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cpath d='M0 20 Q 20 0 40 20 T 80 20' fill='none' stroke='hsla(0,0%25,100%25,0.015)' stroke-width='1'/%3E%3C/svg%3E"); /* Subtle wave pattern */
-    background-size: 80px 40px; /* Density of the wave pattern */
+    /* Light mode default background pattern */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cpath d='M0 20 Q 20 0 40 20 T 80 20' fill='none' stroke='hsl(var(--foreground) / 0.05)' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: 80px 40px; 
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    -moz-osx_font-smoothing: grayscale;
+  }
+
+  /* Apply dark mode pattern when html has .dark class */
+  html.dark body {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cpath d='M0 20 Q 20 0 40 20 T 80 20' fill='none' stroke='hsl(var(--foreground) / 0.02)' stroke-width='1'/%3E%3C/svg%3E"); /* foreground is light in dark mode */
   }
 }
 
@@ -92,63 +112,68 @@
 
 @layer utilities {
   .hover-animated-rgb-border-effect {
-    position: relative; /* Needed for the ::before pseudo-element */
-    /* The shadow is applied here as it's the outermost visible element */
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
-    /* rounded-lg is applied via className in JSX to this element */
+    position: relative; 
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Adjusted shadow for potentially lighter themes */
+     /* Use theme variable for shadow color if desired: box-shadow: 0 4px 30px hsl(var(--foreground) / 0.1); */
   }
+  .dark .hover-animated-rgb-border-effect { /* More prominent shadow for dark mode */
+     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+  }
+
   .hover-animated-rgb-border-effect::before {
     content: '';
     position: absolute;
-    inset: 0; /* Cover the entire area of the parent */
-    border-radius: inherit; /* Inherit from parent (.hover-animated-rgb-border-effect) */
-    padding: 2px; /* This creates the border thickness */
-    background: conic-gradient( /* Red, Orange, looping to Red */
-      hsl(var(--destructive)),
-      orange, /* Orange */
+    inset: 0; 
+    border-radius: inherit; 
+    padding: 2px; 
+    background: conic-gradient( 
+      hsl(var(--destructive)), /* Red */
+      hsl(var(--accent)),    /* Orange */
+      hsl(var(--primary)),   /* Coral */
+      hsl(var(--accent)),    /* Orange */
       hsl(var(--destructive)) /* Loop back to Red */
     );
-    -webkit-mask: /* Mask to show only the border part of the gradient */
-      linear-gradient(#fff 0 0) content-box, /* The inner "transparent" area */
-      linear-gradient(#fff 0 0); /* The outer "solid" area */
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0); 
     mask:
       linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor; /* Standard for creating a "hole" */
-    mask-composite: exclude; /* Standard property for the same effect */
+    -webkit-mask-composite: xor; 
+    mask-composite: exclude; 
     animation: rgb-border-spin 4s linear infinite;
-    opacity: 0; /* Hidden by default */
+    opacity: 0; 
     transition: opacity 0.3s ease-in-out;
-    pointer-events: none; /* Make sure it doesn't interfere with interactions */
-    z-index: -1; /* Place it behind the .hover-animated-rgb-border-inner content */
+    pointer-events: none; 
+    z-index: -1; 
   }
 
   .hover-animated-rgb-border-inner {
-    background: hsl(var(--card)); /* Solid card background from theme */
-    padding: 1.5rem; /* Original GlassCard p-6 equivalent */
-    border-radius: var(--radius); /* Match the parent's rounded-lg. Use var(--radius) as it's globally defined for lg */
-    /* Ensure content is above the ::before pseudo-element of the parent */
+    background: hsl(var(--card)); 
+    padding: 1.5rem; 
+    border-radius: var(--radius); 
     position: relative; 
     z-index: 1; 
     width: 100%;
     height: 100%;
-    /* The border of the original GlassCard is effectively replaced by the ::before element of the parent */
   }
 
-  /* For the static gradient border on the welcome/prompt card */
   .static-gradient-prompt-wrapper {
     position: relative;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8); /* Mimics GlassCard shadow */
-    border-radius: var(--radius); /* Ensures wrapper has same rounding as inner content */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Light theme shadow */
+    border-radius: var(--radius); 
   }
+   .dark .static-gradient-prompt-wrapper {
+     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8); /* Dark theme shadow */
+   }
 
   .static-gradient-prompt-wrapper::before {
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: inherit; /* Inherits from .static-gradient-prompt-wrapper */
-    padding: 2px; /* Border thickness */
-    background: linear-gradient(45deg, hsl(var(--destructive)), orange, hsl(var(--primary))); /* Red, Orange, Primary(Coral) */
+    border-radius: inherit; 
+    padding: 2px; 
+    background: linear-gradient(45deg, hsl(var(--destructive)), hsl(var(--accent)), hsl(var(--primary))); 
     -webkit-mask:
       linear-gradient(#fff 0 0) content-box,
       linear-gradient(#fff 0 0);
@@ -157,34 +182,33 @@
       linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    opacity: 1; /* Always visible */
+    opacity: 1; 
     pointer-events: none;
-    z-index: -1; /* Behind the .static-gradient-prompt-inner content */
+    z-index: -1; 
   }
 
   .static-gradient-prompt-inner {
-    background: hsl(var(--card)); /* Solid card background from theme */
-    padding: 1.5rem; /* Mimics GlassCard p-6 */
-    border-radius: var(--radius); /* Match the wrapper's rounding */
+    background: hsl(var(--card)); 
+    padding: 1.5rem; 
+    border-radius: var(--radius); 
     position: relative;
-    z-index: 1; /* Ensures content is above the ::before pseudo-element of the wrapper */
+    z-index: 1; 
     width: 100%;
     height: 100%;
   }
 
   @keyframes rgb-icon-animation {
-    0%, 100% { color: hsl(var(--primary)); } /* Pink-Orange */
-    25% { color: hsl(var(--accent)); }    /* Orange */
-    50% { color: hsl(var(--destructive)); } /* Red */
-    75% { color: hsl(var(--destructive)); } /* Red */
+    0%, 100% { color: hsl(var(--primary)); } 
+    33% { color: hsl(var(--accent)); }    
+    66% { color: hsl(var(--destructive)); } 
   }
 
   @keyframes chefhat-fill {
     0%, 100% {
-      color: hsla(var(--primary), 0.3);
+      color: hsla(var(--accent), 0.4);
     }
     50% {
-      color: hsla(var(--primary), 1);
+      color: hsla(var(--accent), 1);
     }
   }
 
