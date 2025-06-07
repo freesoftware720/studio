@@ -34,7 +34,7 @@ const generateRecipeImageFlow = ai.defineFlow(
   async (input) => {
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-exp', // Specific model for image generation
-      prompt: `You are an expert food photographer. Generate a vibrant, appetizing, and photorealistic image suitable for a recipe card for a dish called "${input.recipeTitle}". The image should be well-lit, high-quality, and focus on the food itself. Ensure the food looks delicious and inviting.`,
+      prompt: `Photorealistic image for a recipe card: '${input.recipeTitle}'. Vibrant, appetizing, well-lit, high-quality, food-focused, delicious, and inviting.`,
       config: {
         responseModalities: ['TEXT', 'IMAGE'], // Must include IMAGE
          safetySettings: [ // Added to potentially reduce blockages for food items
