@@ -6,14 +6,42 @@ import type { Recipe, UserPreferences } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 import type { GenerateRecipeInput } from '@/ai/flows/generate-recipe';
 import type { PostgrestError } from '@supabase/supabase-js';
-import { useToast } from '@/hooks/use-toast'; // Import useToast
+import { useToast } from '@/hooks/use-toast';
+
+// Helper function for robust parsing of JSONB fields
+const parseJsonbField = <TDefaultType extends any[] | Record<string, any> | undefined>(
+  fieldData: any,
+  defaultValue: TDefaultType
+): TDefaultType => {
+  if (fieldData === null || fieldData === undefined) {
+    return defaultValue;
+  }
+  if (typeof fieldData === 'string') {
+    try {
+      const parsed = JSON.parse(fieldData);
+      // Ensure it's not null after parsing if a non-null defaultValue (like array) is expected
+      return parsed === null && defaultValue !== undefined && defaultValue !== null ? defaultValue : parsed;
+    } catch (e) {
+      console.error('Failed to parse JSON string from DB:', e, fieldData);
+      return defaultValue;
+    }
+  }
+  // If it's already an object (includes arrays)
+  if (typeof fieldData === 'object') {
+    return fieldData;
+  }
+  // For other types, return default
+  console.warn('Unexpected data type for JSONB field, returning default:', fieldData);
+  return defaultValue;
+};
+
 
 export function useRecipeStore() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<PostgrestError | null>(null);
-  const { toast } = useToast(); // Initialize toast
+  const { toast } = useToast();
 
   const getCurrentUserId = async (): Promise<string | undefined> => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -41,17 +69,22 @@ export function useRecipeStore() {
     if (recipeError) {
       setError(recipeError);
       setRecipes([]);
+      toast({
+        title: "Error Fetching Recipes",
+        description: recipeError.message || "Could not load your recipe history.",
+        variant: "destructive",
+      });
     } else {
       const parsedRecipes = recipeData?.map(r => ({
-        ...r,
         id: r.id,
         userId: r.user_id,
         createdAt: new Date(r.created_at).getTime(),
-        ingredients: typeof r.ingredients === 'string' ? JSON.parse(r.ingredients) : r.ingredients,
-        instructions: typeof r.instructions === 'string' ? JSON.parse(r.instructions) : r.instructions,
-        userInput: typeof r.user_input === 'string' ? JSON.parse(r.user_input) : r.user_input,
+        title: r.title,
+        ingredients: parseJsonbField<string[]>(r.ingredients, []),
+        instructions: parseJsonbField<string[]>(r.instructions, []),
         isFavorite: r.is_favorite,
         imageUrl: r.image_url,
+        userInput: parseJsonbField<GenerateRecipeInput | undefined>(r.user_input, undefined),
       } as Recipe)) || [];
       setRecipes(parsedRecipes);
     }
@@ -65,11 +98,12 @@ export function useRecipeStore() {
     if (prefError) {
       setError(prevError => prevError ? { ...prevError, ...prefError, message: `${prevError.message}; ${prefError.message}` } : prefError);
       setPreferences(null);
+      // Toast for preference fetch error can be added if needed, but often less critical than recipes
     } else {
       setPreferences(prefData as UserPreferences | null);
     }
     setLoading(false);
-  }, []); // Removed toast from dependencies as fetchUserData doesn't use it directly
+  }, [toast]); // Added toast as it's used in recipeError case
 
   useEffect(() => {
     fetchUserData();
@@ -103,11 +137,11 @@ export function useRecipeStore() {
     const recipeToSaveToDb = {
       user_id: userId,
       title: recipeCoreData.title,
-      ingredients: recipeCoreData.ingredients,
-      instructions: recipeCoreData.instructions,
+      ingredients: recipeCoreData.ingredients, // Should be string[]
+      instructions: recipeCoreData.instructions, // Should be string[]
       is_favorite: false,
-      user_input: userInputData,
-      // image_url will be updated separately if generated
+      user_input: userInputData, // Should be an object
+      // image_url will be updated separately
     };
 
     const { data: savedData, error: insertError } = await supabase
@@ -139,14 +173,14 @@ export function useRecipeStore() {
         userId: savedData.user_id,
         createdAt: new Date(savedData.created_at).getTime(),
         title: savedData.title,
-        ingredients: savedData.ingredients, // Already in correct format from DB
-        instructions: savedData.instructions, // Already in correct format from DB
+        ingredients: parseJsonbField<string[]>(savedData.ingredients, []), // Ensure these are correctly typed for local state
+        instructions: parseJsonbField<string[]>(savedData.instructions, []),
         isFavorite: savedData.is_favorite,
         imageUrl: savedData.image_url,
-        userInput: savedData.user_input, // Already in correct format from DB
+        userInput: parseJsonbField<GenerateRecipeInput | undefined>(savedData.user_input, undefined),
       };
-      setRecipes(prev => [newRecipe, ...prev]);
-      // toast for saveRecipe is handled on the page where it's called
+      setRecipes(prev => [newRecipe, ...prev.filter(p => p.id !== newRecipe.id)]); // Prepend and ensure no duplicates by ID
+      // Toast for saveRecipe success is usually handled on the page where it's called (e.g., HomePage)
       return newRecipe;
     }
     return null;
@@ -293,14 +327,14 @@ export function useRecipeStore() {
       setPreferences(null);
       return null;
     }
-    setLoading(true);
+    setLoading(true); // Should set loading for preference fetching too
     const { data, error: fetchError } = await supabase
       .from('user_preferences')
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
     
-    setLoading(false);
+    setLoading(false); // Reset loading after fetch
     if (fetchError) {
       console.error("Error fetching preferences from Supabase. Details:", {
         message: fetchError.message,
@@ -311,13 +345,24 @@ export function useRecipeStore() {
       });
       setError(fetchError);
       setPreferences(null);
+      toast({ // Added toast for preference fetch error
+        title: "Error Fetching Preferences",
+        description: fetchError.message || "Could not load your preferences.",
+        variant: "destructive",
+      });
       return null;
     }
-    setPreferences(data as UserPreferences | null);
-    return data as UserPreferences | null;
-  }, []); 
+    const userPrefs = data ? {
+        cuisine: data.cuisine,
+        mealType: data.mealType,
+        dietaryRestrictions: data.dietaryRestrictions,
+        language: data.language,
+    } : null;
+    setPreferences(userPrefs as UserPreferences | null);
+    return userPrefs as UserPreferences | null;
+  }, [toast]); // Added toast dependency
   
-  const savePreferences = useCallback(async (newPreferences: UserPreferences): Promise<void> => {
+  const savePreferences = useCallback(async (newPreferences: Omit<UserPreferences, 'user_id'>): Promise<void> => {
     const userId = await getCurrentUserId();
     if (!userId) {
       setError({ message: 'User not authenticated for saving preferences.', details: '', hint: '', code: '401' });
@@ -328,15 +373,14 @@ export function useRecipeStore() {
       });
       return;
     }
-    // Remove user_id from newPreferences if it exists, as it will be set by `preferencesToSave`
-    // Supabase might complain if user_id is part of the upsert payload but also used in onConflict
-    const { user_id, ...prefsToSaveData } = newPreferences as any; 
-    const preferencesToSave = { ...prefsToSaveData, user_id: userId };
-
+    
+    const preferencesToSave = { ...newPreferences, user_id: userId };
 
     const { error: upsertError } = await supabase
       .from('user_preferences')
-      .upsert(preferencesToSave, { onConflict: 'user_id' });
+      .upsert(preferencesToSave, { onConflict: 'user_id' })
+      .select() // Ensure we get the saved data back
+      .single(); // Assuming upsert on conflict user_id returns the single updated/inserted row
 
     if (upsertError) {
       console.error("Error saving preferences to Supabase. Details:", {
@@ -353,39 +397,34 @@ export function useRecipeStore() {
         variant: "destructive",
       });
     } else {
-      // Fetch the latest preferences to ensure consistency, as upsert might not return the full object
-      const updatedPrefs = await getPreferences();
-      if (updatedPrefs) {
-         setPreferences(updatedPrefs);
-      } else {
-        // Fallback if getPreferences fails, though unlikely if upsert succeeded
-        setPreferences(newPreferences);
-      }
+      // Data from upsert might not include all fields if only some were updated.
+      // Re-fetch or merge carefully. Here, we assume the newPreferences object is complete for local state.
+      setPreferences(newPreferences); // Update local state with the input, assuming it's the desired new state
       toast({
         title: "Preferences Saved",
         description: "Your preferences have been updated.",
         variant: "default",
       });
     }
-  }, [toast, getPreferences]); // Added getPreferences to dependency array
+  }, [toast]);
 
   const getRecipeById = useCallback((recipeId: string): Recipe | undefined => {
     return recipes.find(recipe => recipe.id === recipeId);
   }, [recipes]);
 
   const favorites = recipes.filter(recipe => recipe.isFavorite).sort((a, b) => b.createdAt - a.createdAt);
-  const history = [...recipes].sort((a, b) => b.createdAt - a.createdAt);
+  const history = [...recipes].sort((a, b) => b.createdAt - a.createdAt); // recipes are already sorted by created_at desc from fetch. Sorting again is redundant but harmless.
 
 
   return {
-    recipes,
-    favorites,
-    history,
+    recipes, // Raw list, could be unsorted or sorted as per fetch
+    favorites, // Derived, filtered, and sorted
+    history,   // Derived, sorted (or re-sorted)
     preferences,
     loading,
     error,
     
-    getUserRecipes: fetchUserData,
+    // fetchUserData is mostly for internal use by useEffect, but can be exposed if needed
     saveRecipe,
     toggleFavorite,
     removeRecipe,
