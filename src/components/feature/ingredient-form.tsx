@@ -131,7 +131,7 @@ export function IngredientForm({ onSubmit, isLoading }: IngredientFormProps) {
             </div>
           </div>
           
-          <Button type="submit" disabled={isLoading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-3">
+          <Button type="submit" disabled={isLoading} className="w-full bg-primary text-primary-foreground hover:bg-primary/20 hover:text-primary text-lg py-3">
             <Sparkles className="mr-2 h-5 w-5" />
             {isLoading ? "Generating Recipe..." : "Generate Recipe"}
           </Button>
