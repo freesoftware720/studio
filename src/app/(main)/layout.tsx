@@ -1,5 +1,5 @@
 
-"use client"; // This layout needs to be a client component for hooks
+"use client"; 
 
 import type React from 'react';
 import { AppShell } from '@/components/layout/app-shell';
@@ -7,9 +7,9 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter, usePathname } from 'next/navigation';
 import { LoadingSpinner } from '@/components/feature/loading-spinner';
+import { RecipeProvider } from '@/context/recipe-context'; // Import the provider
 
-// List of public paths that don't require authentication within the (main) group
-const publicPathsWithinMain: string[] = []; // Initialize as empty array if no specific public paths
+const publicPathsWithinMain: string[] = []; 
 
 export default function MainAppLayout({
   children,
@@ -42,18 +42,15 @@ export default function MainAppLayout({
       (_event, session) => {
         if (session) {
           setIsAuthenticated(true);
-          // If user was on an auth page and logs in, redirect to home
           if (pathname.startsWith('/auth')) {
             router.replace('/');
           }
         } else {
           setIsAuthenticated(false);
-          // If user logs out and is on a protected page, redirect to welcome page
            if (!pathname.startsWith('/auth') && !publicPathsWithinMain.includes(pathname)) {
             router.replace('/auth/welcome'); 
           }
         }
-        // No need to setIsLoading here as this is for subsequent changes
       }
     );
 
@@ -64,8 +61,7 @@ export default function MainAppLayout({
 
 
   useEffect(() => {
-    // This effect handles redirection after the initial auth check or on auth state changes
-    if (!isLoading) { // Only run if initial auth check is complete
+    if (!isLoading) { 
       if (!isAuthenticated && !pathname.startsWith('/auth') && !publicPathsWithinMain.includes(pathname)) {
         router.replace('/auth/welcome');
       }
@@ -80,8 +76,6 @@ export default function MainAppLayout({
     );
   }
 
-  // If initial load is done, and user is NOT authenticated, AND is on a protected path,
-  // this will show a brief loading spinner while the useEffect above handles redirection.
   if (!isAuthenticated && !pathname.startsWith('/auth') && !publicPathsWithinMain.includes(pathname)) {
     return (
        <div className="flex items-center justify-center min-h-screen bg-background">
@@ -90,19 +84,23 @@ export default function MainAppLayout({
     );
   }
   
-  // If user is authenticated OR is on an auth page OR on a public page within (main)
   if (isAuthenticated || pathname.startsWith('/auth') || publicPathsWithinMain.includes(pathname)) {
-      if (pathname.startsWith('/auth')) { // Auth pages have their own layout (defined in app/auth/layout.tsx)
-          return <>{children}</>; // Render children directly, auth layout handles its own shell
+      if (pathname.startsWith('/auth')) { 
+          return <>{children}</>; 
       }
-      // Authenticated users or users on public paths within (main) get the AppShell
-      return <AppShell>{children}</AppShell>;
+      // Wrap authenticated routes or public main paths with RecipeProvider
+      return (
+        <RecipeProvider>
+          <AppShell>{children}</AppShell>
+        </RecipeProvider>
+      );
   }
   
-  // Fallback: This case should ideally not be reached if redirection logic is correct.
   return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <LoadingSpinner text="Please wait..." size={48} />
       </div>
   );
 }
+
+    
